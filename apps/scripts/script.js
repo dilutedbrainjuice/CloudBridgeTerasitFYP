@@ -49,6 +49,3 @@ function showPosition(position) {
 
 // Event listener for the button click
 document.getElementById("getLocationBtn").addEventListener("click", getLocation);
-
-// Ensure initMap() is globally accessible
-window.initMap = initMap;
