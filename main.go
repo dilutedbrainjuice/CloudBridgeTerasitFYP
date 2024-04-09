@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -63,7 +65,26 @@ func main() {
 		name := r.PostFormValue("username")
 		email := r.PostFormValue("email")
 		password := r.PostFormValue("password")
-		//profilePic := r.FormFile("profilePic")
+		profilePic, handler, err := r.FormFile("profilePic")
+		if err != nil {
+			http.Error(w, "Failed to retrieve file", http.StatusBadRequest)
+			return
+		}
+		defer profilePic.Close()
+
+		dst, err := os.Create("./uploads/" + handler.Filename)
+		if err != nil {
+			http.Error(w, "Failed to create file on server", http.StatusInternalServerError)
+			return
+		}
+		defer dst.Close()
+
+		// Copy the uploaded file to the destination file
+		if _, err := io.Copy(dst, profilePic); err != nil {
+			http.Error(w, "Failed to save file", http.StatusInternalServerError)
+			return
+		}
+
 		city := r.PostFormValue("city")
 		pcSpecs := r.PostFormValue("pcSpecs")
 		description := r.PostFormValue("description")
@@ -73,7 +94,7 @@ func main() {
 		log.Println("Username:", name)
 		log.Println("Email:", email)
 		log.Println("Password:", password)
-		//log.Println("Profile Picture:", profilePic)
+		log.Println("Profile Picture uploaded successfully")
 		log.Println("City:", city)
 		log.Println("PC Specs:", pcSpecs)
 		log.Println("Description:", description)
