@@ -66,6 +66,7 @@ func main() {
 		var newUser User
 
 		// Get the form values
+
 		newUser.Username = r.PostFormValue("username")
 
 		isProviderStr := r.PostFormValue("isprovider")
@@ -96,7 +97,14 @@ func main() {
 		}
 		defer profilePic.Close()
 
-		dst, err := os.Create("./uploads/" + handler.Filename)
+		// Extracting the file extension from the uploaded file
+		fileExtension := filepath.Ext(handler.Filename)
+
+		// Constructing the new filename using the username and file extension
+		newFilename := newUser.Username + "_profilepic" + fileExtension
+
+		// Creating the destination file with the new filename
+		dst, err := os.Create("./uploads/" + newFilename)
 		if err != nil {
 			http.Error(w, "Failed to create file on server", http.StatusInternalServerError)
 			return
@@ -108,13 +116,6 @@ func main() {
 			http.Error(w, "Failed to save file", http.StatusInternalServerError)
 			return
 		}
-
-		// Get the file path
-		// Extracting the file extension from the uploaded file
-		fileExtension := filepath.Ext(handler.Filename)
-
-		// Constructing the new filename using the username and file extension
-		newFilename := newUser.Username + "_profilepic" + fileExtension
 
 		// Setting the ProfilePicURL with the new filename
 		newUser.ProfilePicURL = "./uploads/" + newFilename
@@ -139,8 +140,8 @@ func main() {
 		log.Println("Created At:", newUser.CreatedAt)
 
 		// Insert data into the database
-		_, err = db.Query("INSERT INTO user(Username, IsProvider, Email, Password, ProfilePicUrl, City, PC_specs, Description, Cloud_service, CreatedAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-			newUser.Username, newUser.IsProvider, newUser.Email, newUser.Password, newUser.ProfilePicURL, newUser.City, newUser.PCSpecs, newUser.Description, newUser.CloudService, newUser.CreatedAt)
+		_, err = db.Query("INSERT INTO user(ID, Username, IsProvider, Email, Password, ProfilePicUrl, City, PC_specs, Description, Cloud_service, CreatedAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+			newUser.ID, newUser.Username, newUser.IsProvider, newUser.Email, newUser.Password, newUser.ProfilePicURL, newUser.City, newUser.PCSpecs, newUser.Description, newUser.CloudService, newUser.CreatedAt)
 		if err != nil {
 			log.Println("here")
 			http.Error(w, "Failed to insert data into database", http.StatusInternalServerError)
