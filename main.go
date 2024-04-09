@@ -8,23 +8,25 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID            int64     `json:"id,omitempty"`
-	Username      string    `json:"username"`
-	IsProvider    bool      `json:"isProvider"`
-	Email         string    `json:"email"`
-	Password      string    `json:"password,omitempty"` // Hashed password, omit from JSON
-	ProfilePicURL string    `json:"profilePicURL"`
-	City          string    `json:"city"`
-	PCSpecs       string    `json:"pcSpecs"`
-	Description   string    `json:"description"`
-	CloudService  string    `json:"cloudService"`
-	CreatedAt     time.Time `json:"createdAt,omitempty"`
+	ID            int64  `json:"id,omitempty"`
+	Username      string `json:"username"`
+	IsProvider    bool   `json:"isProvider"`
+	Email         string `json:"email"`
+	Password      string `json:"password,omitempty"` // Hashed password, omit from JSON
+	ProfilePicURL string `json:"profilePicURL"`
+	City          string `json:"city"`
+	PCSpecs       string `json:"pcSpecs"`
+	Description   string `json:"description"`
+	CloudService  string `json:"cloudService"`
+	CreatedAt     string `json:"createdAt,omitempty"`
 }
 
 type Message struct {
@@ -61,10 +63,32 @@ func main() {
 	registerhandler := func(w http.ResponseWriter, r *http.Request) {
 		log.Print("HTMX request received")
 
+		var newUser User
+
 		// Get the form values
-		name := r.PostFormValue("username")
-		email := r.PostFormValue("email")
-		password := r.PostFormValue("password")
+		newUser.Username = r.PostFormValue("username")
+
+		isProviderStr := r.PostFormValue("isprovider")
+		var isProviderbool bool
+		if isProviderStr == "true" {
+			isProviderbool = true
+		} else {
+			isProviderbool = false
+		}
+		newUser.IsProvider = isProviderbool
+
+		newUser.Email = r.PostFormValue("email")
+
+		priorhash := r.PostFormValue("password")
+		hashedpassword, err := bcrypt.GenerateFromPassword([]byte(priorhash), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+			return
+		}
+
+		hashedPasswordString := string(hashedpassword)
+		newUser.Password = hashedPasswordString
+
 		profilePic, handler, err := r.FormFile("profilePic")
 		if err != nil {
 			http.Error(w, "Failed to retrieve file", http.StatusBadRequest)
@@ -85,22 +109,46 @@ func main() {
 			return
 		}
 
-		city := r.PostFormValue("city")
-		pcSpecs := r.PostFormValue("pcSpecs")
-		description := r.PostFormValue("description")
-		cloudService := r.PostFormValue("cloudService")
+		// Get the file path
+		// Extracting the file extension from the uploaded file
+		fileExtension := filepath.Ext(handler.Filename)
 
-		// Log the user details
-		log.Println("Username:", name)
-		log.Println("Email:", email)
-		log.Println("Password:", password)
-		log.Println("Profile Picture uploaded successfully")
-		log.Println("City:", city)
-		log.Println("PC Specs:", pcSpecs)
-		log.Println("Description:", description)
-		log.Println("Cloud Service:", cloudService)
+		// Constructing the new filename using the username and file extension
+		newFilename := newUser.Username + "_profilepic" + fileExtension
+
+		// Setting the ProfilePicURL with the new filename
+		newUser.ProfilePicURL = "./uploads/" + newFilename
+
+		newUser.City = r.PostFormValue("city")
+		newUser.PCSpecs = r.PostFormValue("pcSpecs")
+		newUser.Description = r.PostFormValue("description")
+		newUser.CloudService = r.PostFormValue("cloudService")
+		currentTime := time.Now()
+		currentTimeString := currentTime.Format("2006-01-02 15:04:05")
+		newUser.CreatedAt = currentTimeString
+
+		log.Println("Username:", newUser.Username)
+		log.Println("IsProvider:", newUser.IsProvider)
+		log.Println("Password:", newUser.Password)
+		log.Println("ID:", newUser.ID)
+		log.Println("Description:", newUser.Description)
+		log.Println("PCSPEC:", newUser.PCSpecs)
+		log.Println("ProfilePicURL:", newUser.ProfilePicURL)
+		log.Println("City", newUser.City)
+		log.Println("Cloud Service:", newUser.CloudService)
+		log.Println("Created At:", newUser.CreatedAt)
+
+		// Insert data into the database
+		_, err = db.Query("INSERT INTO user(Username, IsProvider, Email, Password, ProfilePicUrl, City, PC_specs, Description, Cloud_service, CreatedAt) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+			newUser.Username, newUser.IsProvider, newUser.Email, newUser.Password, newUser.ProfilePicURL, newUser.City, newUser.PCSpecs, newUser.Description, newUser.CloudService, newUser.CreatedAt)
+		if err != nil {
+			log.Println("here")
+			http.Error(w, "Failed to insert data into database", http.StatusInternalServerError)
+			return
+		}
 
 		http.Redirect(w, r, "/home/", http.StatusSeeOther)
+		// insert insert to database function here
 
 	}
 

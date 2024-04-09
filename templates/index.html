@@ -16,7 +16,15 @@
         <form hx-post="/registerform/" enctype="multipart/form-data" hx-target="#content">
             <label for="username">Username:</label><br>
             <input type="text" id="username" name="username" required><br>
-    
+
+            <label for="isprovider">Are you a Provider?</label><br>
+
+            <input type="radio" id="isprovider_yes" name="isprovider" value="yes" required>
+            <label for="isprovider_yes">Yes</label><br>
+
+            <input type="radio" id="isprovider_no" name="isprovider" value="no" required>
+            <label for="isprovider_no">No</label><br>
+
             <label for="email">Email:</label><br>
             <input type="email" id="email" name="email" required><br>
     
