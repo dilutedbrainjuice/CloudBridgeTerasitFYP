@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    
+    <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    
+    <div id="content">
+        <h1>Hello Please Register Your CloudBridge Account</h1>
+
+        <form hx-post="/registerform/" enctype="multipart/form-data" hx-target="#content">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br>
+    
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br>
+    
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br>
+    
+            <label for="profilePicURL">Profile Picture:</label><br>
+            <input type="file" id="profilePic" name="profilePic" accept="image/*"><br>
+    
+            <label for="city">City:</label><br>
+            <input type="text" id="city" name="city"><br>
+    
+            <label for="pcSpecs">PC Specs:</label><br>
+            <input type="text" id="pcSpecs" name="pcSpecs"><br>
+    
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description"></textarea><br>
+    
+            <label for="cloudService">Cloud Service:</label><br>
+            <input type="text" id="cloudService" name="cloudService"><br>
+    
+            <button type="submit">Register</button>
+    
+        </form>
+
+    </div>
+
+    
+    
+</body>
+</html>

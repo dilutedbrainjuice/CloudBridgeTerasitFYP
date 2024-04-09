@@ -3,18 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"time"
 
 	_ "github.com/lib/pq"
 )
-
-func loginHandler() {
-
-}
-
-func registerHandler() {
-}
 
 type User struct {
 	ID            int64     `json:"id,omitempty"`
@@ -55,12 +50,45 @@ func main() {
 	}
 	fmt.Println("Successfully connected to cloudbridge database")
 
-	//initializing server
-	mux := http.NewServeMux()
-	srv := &http.Server{
-		Addr:    ":9000",
-		Handler: mux,
+	//Handlers
+	homehandler := func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseGlob("templates/index.html"))
+		tmpl.Execute(w, nil)
 	}
-	fmt.Println("listening on port 9000")
-	srv.ListenAndServe()
+
+	registerhandler := func(w http.ResponseWriter, r *http.Request) {
+		log.Print("HTMX request received")
+
+		// Get the form values
+		name := r.PostFormValue("username")
+		email := r.PostFormValue("email")
+		password := r.PostFormValue("password")
+		//profilePic := r.FormFile("profilePic")
+		city := r.PostFormValue("city")
+		pcSpecs := r.PostFormValue("pcSpecs")
+		description := r.PostFormValue("description")
+		cloudService := r.PostFormValue("cloudService")
+
+		// Log the user details
+		log.Println("Username:", name)
+		log.Println("Email:", email)
+		log.Println("Password:", password)
+		//log.Println("Profile Picture:", profilePic)
+		log.Println("City:", city)
+		log.Println("PC Specs:", pcSpecs)
+		log.Println("Description:", description)
+		log.Println("Cloud Service:", cloudService)
+
+		http.Redirect(w, r, "/home/", http.StatusSeeOther)
+
+	}
+
+	http.HandleFunc("/home/", homehandler)
+	http.HandleFunc("/registerform/", registerhandler)
+
+	//initializing server
+	log.Println("Listening on port 9000")
+
+	log.Fatal(http.ListenAndServe(":9000", nil))
+
 }
