@@ -28,10 +28,11 @@ func registersitehandler(w http.ResponseWriter, r *http.Request) {
 func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := checkusernameHandler(db, r.PostFormValue("username"))
-		if err == nil {
+		if err != sql.ErrNoRows {
 			//no proceeddo baby
 			//FLAG :: Handle "username already taken error"
-			http.Redirect(w, r, "/registersite/", http.StatusSeeOther)
+			log.Println("here")
+			http.Error(w, "Error: Username already taken", http.StatusUnauthorized)
 
 		} else {
 			log.Print("HTMX request received")
@@ -64,33 +65,59 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 
 			profilePic, handler, err := r.FormFile("profilePic")
 			if err != nil {
-				http.Error(w, "Failed to retrieve file", http.StatusBadRequest)
-				return
+				defaultImagePath := "/home/terasit/repos/CloudBridgeTerasitFYP/uploads/defaultprofilepic/default.png"
+				defaultImage, err := os.Open(defaultImagePath)
+				if err != nil {
+					http.Error(w, "Failed to open default image", http.StatusInternalServerError)
+					return
+				}
+				defer defaultImage.Close()
+
+				// Create a new file in the uploads directory
+				newFilename := newUser.Username + "_profilepic" + filepath.Ext(defaultImagePath)
+				// You can change this filename if needed
+				dst, err := os.Create("./uploads/" + newFilename)
+				if err != nil {
+					http.Error(w, "Failed to create file on server", http.StatusInternalServerError)
+					return
+				}
+				defer dst.Close()
+
+				// Copy the default image to the destination file
+				if _, err := io.Copy(dst, defaultImage); err != nil {
+					http.Error(w, "Failed to save file", http.StatusInternalServerError)
+					return
+				}
+
+				// Set the ProfilePicURL with the new filename
+				newUser.ProfilePicURL = "./uploads/" + newFilename
+
+			} else {
+				defer profilePic.Close()
+
+				// Extracting the file extension from the uploaded file
+				fileExtension := filepath.Ext(handler.Filename)
+
+				// Constructing the new filename using the username and file extension
+				newFilename := newUser.Username + "_profilepic" + fileExtension
+
+				// Creating the destination file with the new filename
+				dst, err := os.Create("./uploads/" + newFilename)
+				if err != nil {
+					http.Error(w, "Failed to create file on server", http.StatusInternalServerError)
+					return
+				}
+				defer dst.Close()
+
+				// Copy the uploaded file to the destination file
+				if _, err := io.Copy(dst, profilePic); err != nil {
+					http.Error(w, "Failed to save file", http.StatusInternalServerError)
+					return
+				}
+
+				// Setting the ProfilePicURL with the new filename
+				newUser.ProfilePicURL = "./uploads/" + newFilename
 			}
-			defer profilePic.Close()
-
-			// Extracting the file extension from the uploaded file
-			fileExtension := filepath.Ext(handler.Filename)
-
-			// Constructing the new filename using the username and file extension
-			newFilename := newUser.Username + "_profilepic" + fileExtension
-
-			// Creating the destination file with the new filename
-			dst, err := os.Create("./uploads/" + newFilename)
-			if err != nil {
-				http.Error(w, "Failed to create file on server", http.StatusInternalServerError)
-				return
-			}
-			defer dst.Close()
-
-			// Copy the uploaded file to the destination file
-			if _, err := io.Copy(dst, profilePic); err != nil {
-				http.Error(w, "Failed to save file", http.StatusInternalServerError)
-				return
-			}
-
-			// Setting the ProfilePicURL with the new filename
-			newUser.ProfilePicURL = "./uploads/" + newFilename
 
 			newUser.City = r.PostFormValue("city")
 			newUser.PCSpecs = r.PostFormValue("pcSpecs")
@@ -129,16 +156,7 @@ func checkusernameHandler(db *sql.DB, username string) error {
 	//check username
 	row := db.QueryRow(`SELECT username FROM "user" WHERE username = $1`, username)
 	err := row.Scan(&verifyR.Username)
-	if err == sql.ErrNoRows {
-		return nil
-	} else if err != nil {
-		log.Println("Error checking username:", err)
-		return err
-	} else {
-		log.Println("Username already exists please choose a new one")
-		return err
-
-	}
+	return err
 	//if row.username coincides with checkusername == return username has been taken, please choose another one
 
 }
@@ -176,6 +194,7 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 				return
 			} else {
 				// Handle invalid credentials
+				//FLAG :: Handle "Invalid credentials"
 				http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 				return
 			}
