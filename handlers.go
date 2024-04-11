@@ -124,35 +124,37 @@ func loginhandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func loginformhandler(db *sql.DB) http.HandlerFunc {
+func LoginFormHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "POST" {
-			err := r.ParseForm()
-			if err != nil {
-				http.Error(w, "Error parsing form", http.StatusBadRequest)
+
+		var user User
+		var verifyuser User
+		user.Username = r.FormValue("username")
+		log.Println(user.Username)
+		user.Password = r.FormValue("password")
+		log.Println(user.Password)
+
+		// Get the existing entry present in the database for the given username
+		result := db.QueryRow(`select password from "user" where username=$1`, user.Username)
+		log.Println(result)
+
+		err := result.Scan(verifyuser.Password)
+		if err != nil {
+			// If an entry with the username does not exist, send an "Unauthorized"(401) status
+			if err == sql.ErrNoRows {
+				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
+			// If the error is of any other type, send a 500 status
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-			username := r.Form.Get("username")
-			password := r.Form.Get("password")
-
-			user := authenticateUser(db, username, password)
-			if user != nil {
-				// Set session cookie or generate token
-				// ...
-
-				// Redirect to protected page
-				log.Println("Logged in handler version")
-				http.Redirect(w, r, "/home/", http.StatusFound)
-				return
-			} else {
-				// Handle invalid credentials
-				http.Error(w, "Invalid username or password", http.StatusUnauthorized)
-				return
-			}
-
+		// Compare the stored hashed password, with the hashed version of the password that was received
+		if err = bcrypt.CompareHashAndPassword([]byte(verifyuser.Password), []byte(user.Password)); err != nil {
+			// If the two passwords don't match, return a 401 status
+			w.WriteHeader(http.StatusUnauthorized)
 		}
 
 	}
-
 }

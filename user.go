@@ -2,10 +2,10 @@ package main
 
 type User struct {
 	ID            int64  `json:"id,omitempty"`
-	Username      string `json:"username"`
+	Username      string `json:"username", db:"username"`
 	IsProvider    bool   `json:"isProvider"`
 	Email         string `json:"email"`
-	Password      string `json:"password,omitempty"` // Hashed password, omit from JSON
+	Password      string `json:"password", db:"password"`
 	ProfilePicURL string `json:"profilePicURL"`
 	City          string `json:"city"`
 	PCSpecs       string `json:"pcSpecs"`

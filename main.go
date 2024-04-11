@@ -18,7 +18,7 @@ func main() {
 
 	//Login page and login logic
 	http.HandleFunc("/login/", loginhandler)
-	http.HandleFunc("/loginform/", loginformhandler(db))
+	http.HandleFunc("/loginform/", LoginFormHandler(db))
 
 	//initializing server
 	log.Println("Listening on port 9000")
