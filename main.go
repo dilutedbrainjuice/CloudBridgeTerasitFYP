@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 
@@ -11,14 +10,15 @@ import (
 func main() {
 
 	db := ConnectPostgresDB()
-	//Handlers
-	homehandler := func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseGlob("templates/index.html"))
-		tmpl.Execute(w, nil)
-	}
 
 	http.HandleFunc("/home/", homehandler)
+	http.HandleFunc("/registersite/", registersitehandler)
 	http.HandleFunc("/registerform/", RegisterHandler(db))
+	http.HandleFunc("/about/", abouthandler)
+
+	//Login page and login logic
+	http.HandleFunc("/login/", loginhandler)
+	http.HandleFunc("/loginform/", loginformhandler(db))
 
 	//initializing server
 	log.Println("Listening on port 9000")

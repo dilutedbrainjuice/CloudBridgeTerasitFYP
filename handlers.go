@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -12,6 +13,17 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+func homehandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseGlob("templates/base.html"))
+	tmpl.Execute(w, nil)
+
+}
+
+func registersitehandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseGlob("templates/index.html"))
+	tmpl.Execute(w, nil)
+}
 
 func RegisterHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -97,6 +109,49 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 		fmt.Printf("ID: %d\n", pk)
 
 		http.Redirect(w, r, "/home/", http.StatusSeeOther)
+
+	}
+
+}
+
+func abouthandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseGlob("templates/about.html"))
+	tmpl.Execute(w, nil)
+}
+
+func loginhandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseGlob("templates/login.html"))
+	tmpl.Execute(w, nil)
+}
+
+func loginformhandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, "Error parsing form", http.StatusBadRequest)
+				return
+			}
+
+			username := r.Form.Get("username")
+			password := r.Form.Get("password")
+
+			user := authenticateUser(db, username, password)
+			if user != nil {
+				// Set session cookie or generate token
+				// ...
+
+				// Redirect to protected page
+				log.Println("Logged in handler version")
+				http.Redirect(w, r, "/home/", http.StatusFound)
+				return
+			} else {
+				// Handle invalid credentials
+				http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+				return
+			}
+
+		}
 
 	}
 
