@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -35,7 +37,7 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 		if err != sql.ErrNoRows {
 			//no proceeddo baby
 			//FLAG :: Handle "username already taken error"
-			log.Println("here")
+			log.Println("username taken")
 			http.Error(w, "Error: Username already taken", http.StatusUnauthorized)
 
 		} else {
@@ -121,8 +123,21 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 				newUser.ProfilePicURL = "./uploads/" + newFilename
 			}
 
-			newUser.Latitude = r.PostFormValue("latitude")
-			newUser.Longitude = r.PostFormValue("longitude")
+			latitudeStr := r.PostFormValue("latitude")
+			longitudeStr := r.PostFormValue("longitude")
+
+			latitude, err := strconv.ParseFloat(latitudeStr, 64)
+			if err != nil {
+				return
+			}
+
+			longitude, err := strconv.ParseFloat(longitudeStr, 64)
+			if err != nil {
+				return
+			}
+
+			newUser.Latitude = latitude
+			newUser.Longitude = longitude
 
 			newUser.PCSpecs = r.PostFormValue("pcSpecs")
 			newUser.Description = r.PostFormValue("description")
@@ -237,17 +252,62 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 func dashboardHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		data, err := getuserlocation(db)
+		userData, err := getuserlocation(db)
 		if err != nil {
+			log.Fatal(err)
 			http.Error(w, "Fucking hell cant get a pussy", http.StatusInternalServerError)
 		}
+		log.Println(userData)
 
-		log.Println(data)
+		// var username []string
+		// var latitude, longitude []float64
+
+		// for _, user := range userData {
+		// 	username = append(username, user.Username)
+		// 	latitude = append(latitude, user.Latitude)
+		// 	longitude = append(longitude, user.Longitude)
+
+		// }
+
+		// data := struct {
+		// 	Username  []string
+		// 	Latitude  []float64
+		// 	Longitude []float64
+		// }{
+		// 	Username:  username,
+		// 	Latitude:  latitude,
+		// 	Longitude: longitude,
+		// }
 
 		//after user logged in
-		tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
-		tmpl.Execute(w, data)
+		// Convert user data to JSON
+		jsonData, err := json.Marshal(userData)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error encoding JSON: %v", err), http.StatusInternalServerError)
+			return
+		}
 
+		// Set response content type to JSON
+		w.Header().Set("Content-Type", "application/json")
+
+		// Write JSON data to response writer
+		if _, err := w.Write(jsonData); err != nil {
+			http.Error(w, fmt.Sprintf("Error writing JSON: %v", err), http.StatusInternalServerError)
+			return
+		}
+		// tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
+		// if err := tmpl.Execute(w, nil); err != nil {
+		// 	log.Fatal(err)
+		// }
+
+	}
+}
+
+func dashboardshow(w http.ResponseWriter, r *http.Request) {
+
+	tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
+	if err := tmpl.Execute(w, nil); err != nil {
+		log.Fatal(err)
 	}
 }
 

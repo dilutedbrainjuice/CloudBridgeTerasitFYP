@@ -88,6 +88,7 @@ func getuserlocation(db *sql.DB) ([]User, error) {
 
 	rows, err := db.Query(`SELECT "ID", username, isprovider, latitude, longitude FROM "user"`)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -99,6 +100,7 @@ func getuserlocation(db *sql.DB) ([]User, error) {
 
 		err := rows.Scan(&user.ID, &user.Username, &user.IsProvider, &user.Latitude, &user.Longitude)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 
@@ -106,6 +108,7 @@ func getuserlocation(db *sql.DB) ([]User, error) {
 	}
 
 	if err := rows.Err(); err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

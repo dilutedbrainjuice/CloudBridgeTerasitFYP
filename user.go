@@ -3,17 +3,17 @@ package main
 import "github.com/golang-jwt/jwt"
 
 type User struct {
-	ID            int64  `json:"id,omitempty"`
-	Username      string `json:"username"`
-	IsProvider    bool   `json:"isProvider"`
-	Password      string `json:"password"`
-	ProfilePicURL string `json:"profilePicURL"`
-	PCSpecs       string `json:"pcSpecs"`
-	Description   string `json:"description"`
-	CloudService  string `json:"cloudService"`
-	CreatedAt     string `json:"createdAt,omitempty"`
-	Latitude      string `json:"latitude"`
-	Longitude     string `json:"longitude"`
+	ID            int64   `json:"id,omitempty"`
+	Username      string  `json:"username"`
+	IsProvider    bool    `json:"isProvider"`
+	Password      string  `json:"password"`
+	ProfilePicURL string  `json:"profilePicURL"`
+	PCSpecs       string  `json:"pcSpecs"`
+	Description   string  `json:"description"`
+	CloudService  string  `json:"cloudService"`
+	CreatedAt     string  `json:"createdAt,omitempty"`
+	Latitude      float64 `json:"latitude"`
+	Longitude     float64 `json:"longitude"`
 }
 
 type Message struct {

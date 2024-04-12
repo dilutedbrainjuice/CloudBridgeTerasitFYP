@@ -5,18 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
     <h1>Get User Location and display on map</h1>
-    <div id="content">
-
-        <div id="map">
-            <h1> {{ . }} </h1>
-        </div>
-        
-    </div>
+    <div style="height: 300px;" id="map"></div>
+    
 </body>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAc9ZBIbs3Fw6bjDf7X9hboPF-m2_2f-BM"></script>
+<script>
+    var map = L.map('map').setView([0, 0], 2); // Set initial view to world map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Fetch user locations from backend
+    fetch('/api/users')
+        .then(response => response.json())
+        .then(users => {
+            users.forEach(user => {
+                console.log(user.latitude)
+                
+                L.marker([user.latitude, user.longitude]).addTo(map)
+                    .bindPopup('<b>User:</b> ' + user.name + '<br><b>City:</b> ' + user.city);
+            });
+        })
+        .catch(error => console.error('Error fetching user locations:', error));
+</script>
+    
+
 
 
 </html>
