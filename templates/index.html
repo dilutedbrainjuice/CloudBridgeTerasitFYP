@@ -38,8 +38,10 @@
             <input type="file" id="profilePic" name="profilePic" accept="image/*"><br>
             
     
-            <label for="city">City:</label><br>
-            <input type="text" id="city" name="city"><br>
+            <input type="text" id="latitude" name="latitude" readonly><br>
+            <input type="text" id="longitude" name="longitude" readonly><br>
+
+            <button id="getLocationBtn" type="button" onclick="getLocation()">Get Location</button><br><br>
     
             <label for="pcSpecs">PC Specs:</label><br>
             <input type="text" id="pcSpecs" name="pcSpecs"><br>
@@ -49,6 +51,8 @@
     
             <label for="cloudService">Cloud Service:</label><br>
             <input type="text" id="cloudService" name="cloudService"><br>
+
+            
     
             <button type="submit">Register</button>
     
@@ -56,6 +60,29 @@
 
     </div>
 
+</body>
+<script>
+    // Function to get user's location
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showLocation);
+      } else {
+        document.getElementById("getLocationBtn").innerHTML = "Geolocation is not supported by this browser.";
+      }
+    }
+    
+    // Function to display user's latitude and longitude
+    function showLocation(position) {
+      var latitude = position.coords.latitude;
+      var longitude = position.coords.longitude;
+    
+      // Update the value of the latitude and longitude input fields
+      document.getElementById("latitude").value = latitude;
+      document.getElementById("longitude").value = longitude;
+    }
+    
+    </script>
+    
 
 </html>
 

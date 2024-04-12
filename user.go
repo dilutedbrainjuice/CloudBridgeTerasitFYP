@@ -6,14 +6,14 @@ type User struct {
 	ID            int64  `json:"id,omitempty"`
 	Username      string `json:"username"`
 	IsProvider    bool   `json:"isProvider"`
-	Email         string `json:"email"`
 	Password      string `json:"password"`
 	ProfilePicURL string `json:"profilePicURL"`
-	City          string `json:"city"`
 	PCSpecs       string `json:"pcSpecs"`
 	Description   string `json:"description"`
 	CloudService  string `json:"cloudService"`
 	CreatedAt     string `json:"createdAt,omitempty"`
+	Latitude      string `json:"latitude"`
+	Longitude     string `json:"longitude"`
 }
 
 type Message struct {

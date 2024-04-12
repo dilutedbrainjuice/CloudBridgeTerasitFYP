@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
 </head>
 <body>
+    <h1>Get User Location and display on map</h1>
+    <div id="content">
 
-    <h1>Congratulations you entered my domain</h1><br>
-    <a href="/logout/">Log out Baby</a>
-    
+        <div id="map">
+            <h1> {{ . }} </h1>
+        </div>
+        
+    </div>
 </body>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAc9ZBIbs3Fw6bjDf7X9hboPF-m2_2f-BM"></script>
+
+
 </html>

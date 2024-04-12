@@ -55,8 +55,6 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 			}
 			newUser.IsProvider = isProviderbool
 
-			newUser.Email = r.PostFormValue("email")
-
 			priorhash := r.PostFormValue("password")
 			hashedpassword, err := bcrypt.GenerateFromPassword([]byte(priorhash), bcrypt.DefaultCost)
 			if err != nil {
@@ -123,7 +121,9 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 				newUser.ProfilePicURL = "./uploads/" + newFilename
 			}
 
-			newUser.City = r.PostFormValue("city")
+			newUser.Latitude = r.PostFormValue("latitude")
+			newUser.Longitude = r.PostFormValue("longitude")
+
 			newUser.PCSpecs = r.PostFormValue("pcSpecs")
 			newUser.Description = r.PostFormValue("description")
 			newUser.CloudService = r.PostFormValue("cloudService")
@@ -134,11 +134,13 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 			log.Println("Username:", newUser.Username)
 			log.Println("IsProvider:", newUser.IsProvider)
 			log.Println("Password:", newUser.Password)
+			log.Println("Latitude:", newUser.Latitude)
+			log.Println("Longitude:", newUser.Longitude)
+
 			log.Println("ID:", newUser.ID)
 			log.Println("Description:", newUser.Description)
 			log.Println("PCSPEC:", newUser.PCSpecs)
 			log.Println("ProfilePicURL:", newUser.ProfilePicURL)
-			log.Println("City", newUser.City)
 			log.Println("Cloud Service:", newUser.CloudService)
 			log.Println("Created At:", newUser.CreatedAt)
 
@@ -232,10 +234,21 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 
 }
 
-func dashboardHandler(w http.ResponseWriter, r *http.Request) {
-	//after user logged in
-	tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
-	tmpl.Execute(w, nil)
+func dashboardHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		data, err := getuserlocation(db)
+		if err != nil {
+			http.Error(w, "Fucking hell cant get a pussy", http.StatusInternalServerError)
+		}
+
+		log.Println(data)
+
+		//after user logged in
+		tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
+		tmpl.Execute(w, data)
+
+	}
 }
 
 // Example logout handler
@@ -250,6 +263,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	//FLAG :: Handle cookie expire message
 	//you have been logged out please log in again
+	log.Println("Logged out")
 
 	http.Redirect(w, r, "/home/", http.StatusFound)
 }
