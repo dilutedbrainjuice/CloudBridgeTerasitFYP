@@ -11,10 +11,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
+var jwtKey = []byte("monkeygorilla")
+
 func homehandler(w http.ResponseWriter, r *http.Request) {
+
 	tmpl := template.Must(template.ParseGlob("templates/base.html"))
 	tmpl.Execute(w, nil)
 
@@ -185,12 +189,35 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 
 			user := authenticateUser(db, username, password)
 			if user != nil {
-				// Set session cookie or generate token
-				// ...
+				// If the user is authenticated, create a JWT token
+				expirationTime := time.Now().Add(24 * time.Hour) // Example: Token expires in 24 hours
+				claims := &Claims{
+					Username: username,
+					StandardClaims: jwt.StandardClaims{
+						ExpiresAt: expirationTime.Unix(),
+					},
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				tokenString, err := token.SignedString(jwtKey)
+				if err != nil {
+					http.Error(w, "Error generating token", http.StatusInternalServerError)
+					return
+				}
+
+				// Set the token as a cookie or send it in the response body
+				http.SetCookie(w, &http.Cookie{
+					Name:     "token",
+					Value:    tokenString,
+					Expires:  expirationTime,
+					Path:     "/",                   // Set the cookie path
+					HttpOnly: true,                  // HTTP only cookie
+					Secure:   true,                  // Set to true if served over HTTPS
+					SameSite: http.SameSiteNoneMode, // Consider setting SameSite attribute appropriately
+				})
 
 				// Redirect to protected page
 				log.Println("Logged in handler version")
-				http.Redirect(w, r, "/home/", http.StatusFound)
+				http.Redirect(w, r, "/about/", http.StatusFound)
 				return
 			} else {
 				// Handle invalid credentials
@@ -203,4 +230,26 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 
 	}
 
+}
+
+func dashboardHandler(w http.ResponseWriter, r *http.Request) {
+	//after user logged in
+	tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
+	tmpl.Execute(w, nil)
+}
+
+// Example logout handler
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:  "token",
+		Value: "",
+		// Set expiration to the past
+		MaxAge: -1,  // Alternatively, you can set MaxAge to 0
+		Path:   "/", // Set the cookie path
+	})
+
+	//FLAG :: Handle cookie expire message
+	//you have been logged out please log in again
+
+	http.Redirect(w, r, "/home/", http.StatusFound)
 }
