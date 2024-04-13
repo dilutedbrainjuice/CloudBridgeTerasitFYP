@@ -14,24 +14,83 @@
     
 </body>
 <script>
-    var map = L.map('map').setView([0, 0], 2); // Set initial view to world map
+    var map = L.map('map'); // Create a map without setting the initial view
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    // Function to get user city
+    // function getUserCity(lat, lng, marker) {
+    //     var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng;
+    //     fetch(url)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             var city = data.address.city || 'Unknown';
+    //             // var city = data.address.city || data.address.town || 'Unknown'; 
+    //             // Get city or town name, default to 'Unknown'
+    //             marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city); // Update popup content with city name
+    //         })
+    //         .catch(error => console.error('Error fetching city data:', error));
+    // }
+
+    function getUserCity(lat, lng, marker) {
+  // Replace YOUR_API_KEY with your actual Google Maps API key
+  var url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + lat + ',' + lng + '&key=AIzaSyAc9ZBIbs3Fw6bjDf7X9hboPF-m2_2f-BM';
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      var city = '';
+      // Loop through address components to find locality (city)
+      for (var i = 0; i < data.results[0].address_components.length; i++) {
+        if (data.results[0].address_components[i].types[0] === 'locality') {
+          city = data.results[0].address_components[i].long_name;
+          break;
+        }
+      }
+      city = city || 'Unknown'; // Set default to 'Unknown' if city not found
+
+      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city); // Update popup content with city name
+    })
+    .catch(error => console.error('Error fetching city data:', error));
+}
 
     // Fetch user locations from backend
     fetch('/api/users')
         .then(response => response.json())
         .then(users => {
+            var userMarkers = [];
+            var latSum = 0;
+            var lonSum = 0;
+
             users.forEach(user => {
-                console.log(user.latitude)
-                
-                L.marker([user.latitude, user.longitude]).addTo(map)
-                    .bindPopup('<b>User:</b> ' + user.name + '<br><b>City:</b> ' + user.city);
+                latSum += user.latitude;
+                lonSum += user.longitude;
+
+                var marker = L.marker([user.latitude, user.longitude]);
+                marker.user = user; // Attach user data to marker object
+
+                // Call getUserCity to get city for each marker
+                getUserCity(user.latitude, user.longitude, marker);
+
+                userMarkers.push(marker);
+            });
+
+            // Calculate average latitude and longitude
+            var avgLat = latSum / users.length;
+            var avgLon = lonSum / users.length;
+
+            // Set the view to the average latitude and longitude
+            map.setView([avgLat, avgLon],12);
+
+            // Add markers to the map
+            userMarkers.forEach(marker => {
+                marker.addTo(map);
             });
         })
         .catch(error => console.error('Error fetching user locations:', error));
 </script>
+
     
 
 
