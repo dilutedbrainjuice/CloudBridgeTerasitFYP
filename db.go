@@ -86,7 +86,7 @@ func getUserByUsername(db *sql.DB, username string) *User {
 
 func getuserlocation(db *sql.DB) ([]User, error) {
 
-	rows, err := db.Query(`SELECT "ID", username, isprovider, latitude, longitude FROM "user"`)
+	rows, err := db.Query(`SELECT "ID", username, isprovider, profilepicurl, pc_specs, description, cloud_service, latitude, longitude FROM "user"`)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -98,11 +98,13 @@ func getuserlocation(db *sql.DB) ([]User, error) {
 	for rows.Next() {
 		var user User
 
-		err := rows.Scan(&user.ID, &user.Username, &user.IsProvider, &user.Latitude, &user.Longitude)
+		err := rows.Scan(&user.ID, &user.Username, &user.IsProvider, &user.ProfilePicURL, &user.PCSpecs, &user.Description, &user.CloudService, &user.Latitude, &user.Longitude)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
+
+		// Construct the full URL for the profile picture
 
 		users = append(users, user)
 	}

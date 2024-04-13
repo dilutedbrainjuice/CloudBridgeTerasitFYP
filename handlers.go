@@ -257,30 +257,7 @@ func dashboardHandler(db *sql.DB) http.HandlerFunc {
 			log.Fatal(err)
 			http.Error(w, "Fucking hell cant get a pussy", http.StatusInternalServerError)
 		}
-		log.Println(userData)
 
-		// var username []string
-		// var latitude, longitude []float64
-
-		// for _, user := range userData {
-		// 	username = append(username, user.Username)
-		// 	latitude = append(latitude, user.Latitude)
-		// 	longitude = append(longitude, user.Longitude)
-
-		// }
-
-		// data := struct {
-		// 	Username  []string
-		// 	Latitude  []float64
-		// 	Longitude []float64
-		// }{
-		// 	Username:  username,
-		// 	Latitude:  latitude,
-		// 	Longitude: longitude,
-		// }
-
-		//after user logged in
-		// Convert user data to JSON
 		jsonData, err := json.Marshal(userData)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error encoding JSON: %v", err), http.StatusInternalServerError)
@@ -295,10 +272,6 @@ func dashboardHandler(db *sql.DB) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("Error writing JSON: %v", err), http.StatusInternalServerError)
 			return
 		}
-		// tmpl := template.Must(template.ParseGlob("templates/dashboard.html"))
-		// if err := tmpl.Execute(w, nil); err != nil {
-		// 	log.Fatal(err)
-		// }
 
 	}
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link rel="stylesheet" href="../static/css/style.css">
     <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -19,19 +20,7 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Function to get user city
-    // function getUserCity(lat, lng, marker) {
-    //     var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng;
-    //     fetch(url)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             var city = data.address.city || 'Unknown';
-    //             // var city = data.address.city || data.address.town || 'Unknown'; 
-    //             // Get city or town name, default to 'Unknown'
-    //             marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city); // Update popup content with city name
-    //         })
-    //         .catch(error => console.error('Error fetching city data:', error));
-    // }
+  
 
     function getUserCity(lat, lng, marker) {
   // Replace YOUR_API_KEY with your actual Google Maps API key
@@ -50,9 +39,19 @@
       }
       city = city || 'Unknown'; // Set default to 'Unknown' if city not found
 
-      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city); // Update popup content with city name
+      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService) ; // Update popup content with city name
     })
     .catch(error => console.error('Error fetching city data:', error));
+}
+
+function createUserIcon(profilePicUrl) {
+    return L.divIcon({
+    className: 'custom-icon',
+    html: '<div class="rounded-icon" style="background-image: url(' + profilePicUrl + ');"></div>',
+    iconSize: [40, 40], // Larger icon size
+    iconAnchor: [20, 0],
+    
+  });
 }
 
     // Fetch user locations from backend
@@ -67,11 +66,23 @@
                 latSum += user.latitude;
                 lonSum += user.longitude;
 
-                var marker = L.marker([user.latitude, user.longitude]);
+    
+
+
+
+                var marker = L.marker([user.latitude, user.longitude], {
+                    icon: createUserIcon(user.profilePicURL)
+                });
                 marker.user = user; // Attach user data to marker object
 
                 // Call getUserCity to get city for each marker
                 getUserCity(user.latitude, user.longitude, marker);
+
+                marker.on('click', function() {
+                map.setView([this.getLatLng().lat, this.getLatLng().lng], 14); // Zoom to marker location with zoom level 14 (more zoomed in)
+                this.setIcon(createUserIcon(user.profilePicURL)); // Re-create icon with potentially larger size (optional)
+            });
+
 
                 userMarkers.push(marker);
             });
