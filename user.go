@@ -18,6 +18,8 @@ type User struct {
 	CreatedAt     string  `json:"createdAt,omitempty"`
 	Latitude      float64 `json:"latitude"`
 	Longitude     float64 `json:"longitude"`
+	TokenUsername string  `json:"tokenUsername"`
+	TokenUserID   int64   `json:"tokenUserID"`
 }
 
 type Claims struct {

@@ -36,8 +36,9 @@ func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	//display chat page
-	http.HandleFunc("/chat-room/", validateToken(chatHandler))
-	http.HandleFunc("/initiateprivatechat", validateToken(initiatePrivateChatHandler))
+	http.HandleFunc("/initiateprivatechat", validateToken(chatHandler))
+	//http.HandleFunc("/initiateprivatechat", validateToken(initiatePrivateChatHandler))
+	http.HandleFunc("/api/currentuserIDName", validateToken(currentUserIDNameHandler))
 
 	rootCtx := context.Background()
 	ctx, cancel := context.WithCancel(rootCtx)

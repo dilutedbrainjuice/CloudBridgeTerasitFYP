@@ -39,14 +39,37 @@
       }
       city = city || 'Unknown'; // Set default to 'Unknown' if city not found
 
-      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +')">Chat</button>') ; // Update popup content with city name
+      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +' , \''+ marker.user.username +'\')">Chat</button>') ; // Update popup content with city name
     })
     .catch(error => console.error('Error fetching city data:', error));
 }
 
-function openChat(targetUserID){
-    console.log(targetUserID)
-    window.location.href = "/initiateprivatechat?userId=" + targetUserID;
+function openChat(targetUserID, targetUsername){
+    fetch('/api/currentuserIDName')
+    .then(response => response.json())
+    .then(data => {
+        // Assuming the response contains currentUserID and currentUsername as JSON
+        const currentUserID = data.currentUserID;
+        const currentUsername = data.currentUsername;
+        
+        // Now you have currentUserID and currentUsername in JavaScript variables
+        console.log("Current User ID:", currentUserID);
+        console.log("Current Username:", currentUsername);
+
+        // Convert currentUserID to a string
+        var currentUserIDStr = currentUserID.toString();
+
+        // Generate a unique chatroom name based on user IDs
+        var chatroomName = "private_" + Math.min(currentUserIDStr, targetUserID) + "_" + Math.max(currentUserIDStr, targetUserID);
+
+        // Redirect both users to the newly created private chatroom
+        window.location.href = "/initiateprivatechat?chatroom=" + chatroomName + "&targetname=" + encodeURIComponent(targetUsername);
+    
+    })
+    .catch(error => {
+        console.error('Error fetching current user:', error);
+    });
+    
 }
 
 function createUserIcon(profilePicUrl) {
@@ -61,50 +84,53 @@ function createUserIcon(profilePicUrl) {
 
     // Fetch user locations from backend
     fetch('/api/users')
-        .then(response => response.json())
-        .then(users => {
-            var userMarkers = [];
-            var latSum = 0;
-            var lonSum = 0;
+    .then(response => response.json())
+    .then(users => {
+        var userMarkers = [];
+        var latSum = 0;
+        var lonSum = 0;
 
-            users.forEach(user => {
-                latSum += user.latitude;
-                lonSum += user.longitude;
+        users.forEach(user => {
+            latSum += user.latitude;
+            lonSum += user.longitude;
 
-    
+            var markerIcon = createUserIcon(user.profilePicURL);
 
+            var popupContent = '<b>Username:</b> ' + user.username + '<br><b>Near:</b> Unknown<br><b>CloudService:</b> ' + user.cloudService + '<br><button onclick="openChat('+ user.id +', \''+ user.username +'\')">Chat</button>';
 
+            // Check if the username matches the tokenusername
+            if (user.username === user.tokenUsername) {
+                // Display "you are here!" bubble
+                popupContent = 'You are here!!!<br>'+'<b>Username:</b> ' + user.username + '<br><b>Near:</b> You are here!<br><b>CloudService:</b> ' + user.cloudService;
+            }
 
-                var marker = L.marker([user.latitude, user.longitude], {
-                    icon: createUserIcon(user.profilePicURL)
-                });
-                marker.user = user; // Attach user data to marker object
+            var marker = L.marker([user.latitude, user.longitude], {
+                icon: markerIcon
+            });
 
-                // Call getUserCity to get city for each marker
-                getUserCity(user.latitude, user.longitude, marker);
+            // Set popup content for the marker
+            marker.bindPopup(popupContent);
 
-                marker.on('click', function() {
+            marker.on('click', function() {
                 map.setView([this.getLatLng().lat, this.getLatLng().lng], 14); // Zoom to marker location with zoom level 14 (more zoomed in)
-                this.setIcon(createUserIcon(user.profilePicURL)); // Re-create icon with potentially larger size (optional)
             });
 
+            userMarkers.push(marker);
+        });
 
-                userMarkers.push(marker);
-            });
+        // Calculate average latitude and longitude
+        var avgLat = latSum / users.length;
+        var avgLon = lonSum / users.length;
 
-            // Calculate average latitude and longitude
-            var avgLat = latSum / users.length;
-            var avgLon = lonSum / users.length;
+        // Set the view to the average latitude and longitude
+        map.setView([avgLat, avgLon], 12);
 
-            // Set the view to the average latitude and longitude
-            map.setView([avgLat, avgLon],12);
-
-            // Add markers to the map
-            userMarkers.forEach(marker => {
-                marker.addTo(map);
-            });
-        })
-        .catch(error => console.error('Error fetching user locations:', error));
+        // Add markers to the map
+        userMarkers.forEach(marker => {
+            marker.addTo(map);
+        });
+    })
+    .catch(error => console.error('Error fetching user locations:', error));
 </script>
 
     

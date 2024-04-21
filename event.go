@@ -3,9 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 )
 
+// Event is the Messages sent over the websocket
+// Used to differ between different actions
 type Event struct {
 	// Type is the message type sent
 	Type string `json:"type"`
@@ -88,6 +91,7 @@ func ChatRoomHandler(event Event, c *Client) error {
 
 	// Add Client to chat room
 	c.chatroom = changeRoomEvent.Name
+	log.Println(changeRoomEvent.Name)
 
 	return nil
 }

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -12,9 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -258,10 +254,25 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 func dashboardHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		tokenusername, tokenuserID, err := extractUserInfoFromToken(r)
+		if err != nil {
+			log.Println(err)
+		}
+
+		log.Println("tokenusername:", tokenusername)
+		log.Println("tokenuserID:", tokenuserID)
+
 		userData, err := getuserlocation(db)
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, "Fucking hell cant get a pussy", http.StatusInternalServerError)
+			return
+		}
+
+		// Add tokenusername and tokenuserID to the response
+		for i := range userData {
+			userData[i].TokenUsername = tokenusername
+			userData[i].TokenUserID = tokenuserID
 		}
 
 		jsonData, err := json.Marshal(userData)
@@ -278,7 +289,6 @@ func dashboardHandler(db *sql.DB) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("Error writing JSON: %v", err), http.StatusInternalServerError)
 			return
 		}
-
 	}
 }
 
@@ -313,92 +323,82 @@ func chatHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-// RoomManager manages private chat rooms
-type RoomManager struct {
-	rooms map[string][]int64
-	mu    sync.Mutex
-}
-
-// NewRoomManager creates a new RoomManager instance
-func NewRoomManager() *RoomManager {
-	return &RoomManager{
-		rooms: make(map[string][]int64),
+func currentUserIDNameHandler(w http.ResponseWriter, r *http.Request) {
+	type currentUser struct {
+		CurrentUserID   int64  `json:"currentUserID"`
+		CurrentUsername string `json:"currentUsername"`
 	}
-}
+	// var userIDKey ID = 0
+	// var userNameKey Username = ""
+	// currentUserID, ok := r.Context().Value(userIDKey).(int64)
+	// if !ok {
+	// 	http.Error(w, "Failed to parse current user ID", http.StatusInternalServerError)
+	// 	return
+	// }
 
-// CreateRoom creates a new private chat room
-func (rm *RoomManager) CreateRoom(userID1, userID2 int64) string {
-	roomID := generateUniqueRoomID(userID1, userID2)
-	rm.mu.Lock()
-	defer rm.mu.Unlock()
-	rm.rooms[roomID] = []int64{userID1, userID2}
-	return roomID
-}
+	// currentUsername, ok := r.Context().Value(userNameKey).(string)
+	// if !ok {
+	// 	http.Error(w, "Failed to parse current username", http.StatusInternalServerError)
+	// 	return
+	// }
 
-// CheckAccess checks if a user is authorized to access the room
-func (rm *RoomManager) CheckAccess(roomID string, userID int64) bool {
-	rm.mu.Lock()
-	defer rm.mu.Unlock()
-	users, ok := rm.rooms[roomID]
-	if !ok {
-		return false // Room doesn't exist
-	}
-	for _, id := range users {
-		if id == userID {
-			return true // User is authorized
-		}
-	}
-	return false // User is not authorized
-}
+	// // Now you have currentUserID and currentUsername, you can use them as needed
+	// log.Println("Current User ID:", currentUserID)
+	// log.Println("Current Username:", currentUsername)
 
-// initiatePrivateChatHandler handles private chat initiation
-func initiatePrivateChatHandler(w http.ResponseWriter, r *http.Request) {
-	// Get the target user's ID from the request query parameters
-	targetUserID := r.URL.Query().Get("userId")
-	targetID, err := strconv.ParseInt(targetUserID, 10, 64)
+	tokenusername, tokenuserID, err := extractUserInfoFromToken(r)
 	if err != nil {
-		http.Error(w, "Invalid target user ID", http.StatusBadRequest)
+		log.Println(err)
+	}
+
+	log.Println("tokenusername:", tokenusername)
+	log.Println("tokenuserID:", tokenuserID)
+
+	// Marshal the currentUser struct into JSON
+	currentUserJSON, err := json.Marshal(currentUser{
+		CurrentUserID:   tokenuserID,
+		CurrentUsername: tokenusername,
+	})
+	if err != nil {
+		http.Error(w, "Failed to marshal current user data", http.StatusInternalServerError)
 		return
 	}
 
-	// Get the current user's ID from the context
-	// Retrieve user information from the request context
-	// Use the same key instances for retrieving values from the context
-	var userIDKey ID = 0
-	currentUserID, ok := r.Context().Value(userIDKey).(int64)
-	if !ok {
-		log.Println("Error retrieving user ID from context")
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	println(currentUserID, targetID)
-
-	// Create RoomManager instance
-	roomManager := NewRoomManager()
-
-	// Create a unique room ID for the private chat
-	roomID := roomManager.CreateRoom(currentUserID, targetID)
-
-	// Redirect the user to the private chat room
-	http.Redirect(w, r, "/chat-room/"+"?roomId="+roomID+"&userId="+targetUserID, http.StatusFound)
+	// Write the JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(currentUserJSON)
 }
 
-// generateUniqueRoomID generates a unique room ID based on user IDs
-func generateUniqueRoomID(userID1, userID2 int64) string {
-	// Sort the user IDs to ensure consistency
-	sortedUserIDs := []int64{userID1, userID2}
-	sort.Slice(sortedUserIDs, func(i, j int) bool {
-		return sortedUserIDs[i] < sortedUserIDs[j]
+func extractUserInfoFromToken(r *http.Request) (string, int64, error) {
+	// Get the token from the request
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return "", 0, err
+	}
+	tokenString := cookie.Value
+
+	// Parse the token
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return jwtKey, nil
 	})
+	if err != nil {
+		return "", 0, err
+	}
 
-	// Concatenate sorted user IDs
-	combinedData := fmt.Sprintf("%d%d", sortedUserIDs[0], sortedUserIDs[1])
+	// Check if the token is valid
+	if !token.Valid {
+		return "", 0, jwt.ErrSignatureInvalid
+	}
 
-	// Hash the concatenated string using sha256
-	hash := sha256.New()
-	hash.Write([]byte(combinedData))
-	hashedResult := hex.EncodeToString(hash.Sum(nil))
+	// Extract claims
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		return "", 0, jwt.ErrInvalidKeyType
+	}
 
-	return hashedResult
+	// Extract user info
+	username := claims.Username
+	userID := claims.ID
+
+	return username, userID, nil
 }
