@@ -14,6 +14,7 @@
         <h3 id="chat-header">Currently in chat: general</h3>
         <h3 id="connection-header">Connected to Websocket: false</h3>
         <div id="loggedInAs"></div>
+        <div id="talkingTo"></div>
 
 
         <!--
@@ -42,10 +43,6 @@
             <input type="submit" value="Send message">
         </form>
 
-        <!--
-        login form is used to login
-        -->
-        
 
     </div>
 
@@ -96,6 +93,9 @@
          * based on the type field
          * */
          // Declare user globally accessible
+const talkingTo = document.getElementById("talkingTo");
+talkingTo.innerText = "Talking to: " + fetchTarget()
+
 let user = null;
 
 // Fetch user information
@@ -129,29 +129,7 @@ function fetchUserInfo() {
             }
 
         }
-//         function saveChatMessages(messageEvent) {
-//     // Retrieve existing chat messages from Local Storage
-//     let savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-    
-//     // Add the new message to the array
-//     savedMessages.push(messageEvent);
-    
-//     // Save the updated array back to Local Storage
-//     localStorage.setItem('chatMessages', JSON.stringify(savedMessages));
-// }
-// Function to load chat messages from Local Storage
-// function loadChatMessages() {
-//     // Retrieve saved chat messages from Local Storage
-//     let savedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-    
-//     // Populate the textarea with the saved messages
-//     const textarea = document.getElementById("chatmessages");
-//     textarea.innerHTML = savedMessages.join('\n');
-//     textarea.scrollTop = textarea.scrollHeight;
-// }
-        /**
-         * appendChatMessage takes in new messages and adds them to the chat
-         * */
+
         function appendChatMessage(messageEvent) {
             var date = new Date(messageEvent.sent);
             const senderUsername = (messageEvent.from === user.tokenUsername) ? user.tokenUsername : messageEvent.from;
@@ -227,32 +205,14 @@ function fetchUserInfo() {
             // Format as JSON and send
             conn.send(JSON.stringify(event));
         }
-        /**
-         * login will send a login request to the server and then 
-         * connect websocket
-         * */
-        function login() {
-            let formData = {
-                "username": document.getElementById("username").value,
-                "password": document.getElementById("password").value
-            }
-            // Send the request
-            fetch("login", {
-                method: 'post',
-                body: JSON.stringify(formData),
-                mode: 'cors',
-            }).then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw 'unauthorized';
-                }
-            }).then((data) => {
-                // Now we have a OTP, send a Request to Connect to WebSocket
-                connectWebsocket(data.otp);
-            }).catch((e) => { alert(e) });
-            return false;
+        function fetchTarget(){
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetFromURL = urlParams.get('targetname');
+
+            return targetFromURL;
+
         }
+
         /**
          * ConnectWebsocket will connect to websocket and add listeners
          * */
@@ -289,6 +249,7 @@ function fetchUserInfo() {
             }
 
         }
+
             
         
         /**
@@ -302,11 +263,6 @@ function fetchUserInfo() {
             setTimeout(changeChatRoom, 1000);
             document.getElementById("chatroom-message").onsubmit = sendMessage;
             // loadChatMessages();
-            
-
-            
-            
-
 
         };
     </script>
