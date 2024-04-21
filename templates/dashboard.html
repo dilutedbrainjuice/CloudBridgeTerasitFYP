@@ -39,9 +39,14 @@
       }
       city = city || 'Unknown'; // Set default to 'Unknown' if city not found
 
-      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService) ; // Update popup content with city name
+      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +')">Chat</button>') ; // Update popup content with city name
     })
     .catch(error => console.error('Error fetching city data:', error));
+}
+
+function openChat(targetUserID){
+    console.log(targetUserID)
+    window.location.href = "/initiateprivatechat?userId=" + targetUserID;
 }
 
 function createUserIcon(profilePicUrl) {

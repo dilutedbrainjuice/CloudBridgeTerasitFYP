@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	"github.com/golang-jwt/jwt"
 )
+
+type ID int64
+type Username string
 
 func validateToken(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +49,20 @@ func validateToken(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
+		// Use the exact types directly for context keys
+		var userIDKey ID = 0          // Assuming ID(0) is the zero value for your ID type
+		var userNameKey Username = "" // Assuming Username("") is the zero value for your Username type
+
+		ctx := context.WithValue(r.Context(), userIDKey, claims.ID)
+		ctx = context.WithValue(ctx, userNameKey, claims.Username)
+
+		// Logging to check the values stored in context
+		log.Println("UserID stored in context:", ctx.Value(userIDKey))
+		log.Println("Username stored in context:", ctx.Value(userNameKey))
+
+		// Call the next handler with the updated request context
+		next(w, r.WithContext(ctx))
 		// Token is valid, call the next handler
-		next(w, r)
+
 	}
 }

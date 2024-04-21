@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -23,16 +24,28 @@ func main() {
 	http.HandleFunc("/loginform/", loginformhandler(db))
 	http.HandleFunc("/logout/", logoutHandler)
 
-	// imageDir := "/home/terasit/repos/CloudBridgeTerasitFYP/uploads/"
+	imageDir := "/home/terasit/repos/CloudBridgeTerasitFYP/uploads/"
 
-	// // Create a file server handler to serve files from the image directory
-	// fs := http.FileServer(http.Dir(imageDir))
+	// Create a file server handler to serve files from the image directory
+	fs := http.FileServer(http.Dir(imageDir))
 
-	// // Handle requests for images by serving files from the file server
-	// http.Handle("/uploads/", http.StripPrefix("/uploads/", fs))
+	// Handle requests for images by serving files from the file server
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", fs))
 
 	//initializing server
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	//display chat page
+	http.HandleFunc("/chat-room/", validateToken(chatHandler))
+	http.HandleFunc("/initiateprivatechat", validateToken(initiatePrivateChatHandler))
+
+	rootCtx := context.Background()
+	ctx, cancel := context.WithCancel(rootCtx)
+
+	defer cancel()
+	manager := NewManager(ctx)
+	http.HandleFunc("/ws", manager.serveWS)
+
 	log.Println("Listening on port 9000")
 	log.Fatal(http.ListenAndServe(":9000", nil))
 

@@ -1,6 +1,10 @@
 package main
 
-import "github.com/golang-jwt/jwt"
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt"
+)
 
 type User struct {
 	ID            int64   `json:"id,omitempty"`
@@ -16,15 +20,15 @@ type User struct {
 	Longitude     float64 `json:"longitude"`
 }
 
-type Message struct {
-	MessageID  int64  `json:"messageID,omitempty"`
-	SenderID   int64  `json:"senderID"`
-	ReceiverID int64  `json:"receiverID"`
-	Message    string `json:"message"`
-	SentAt     string `json:"sentAt,omitempty"`
-}
-
 type Claims struct {
+	ID       int64  `json:"id,omitempty"`
 	Username string `json:"username"`
 	jwt.StandardClaims
+}
+
+type MessageDto struct {
+	ID        string
+	Message   string
+	From      string
+	Timestamp time.Time
 }

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -10,7 +12,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -120,7 +124,7 @@ func RegisterHandler(db *sql.DB) http.HandlerFunc {
 				}
 
 				// Setting the ProfilePicURL with the new filename
-				newUser.ProfilePicURL = "./uploads/" + newFilename
+				newUser.ProfilePicURL = "/uploads/" + newFilename
 			}
 
 			latitudeStr := r.PostFormValue("latitude")
@@ -206,9 +210,11 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 
 			user := authenticateUser(db, username, password)
 			if user != nil {
+				id := user.ID
 				// If the user is authenticated, create a JWT token
 				expirationTime := time.Now().Add(24 * time.Hour) // Example: Token expires in 24 hours
 				claims := &Claims{
+					ID:       id,
 					Username: username,
 					StandardClaims: jwt.StandardClaims{
 						ExpiresAt: expirationTime.Unix(),
@@ -299,4 +305,100 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Logged out")
 
 	http.Redirect(w, r, "/home/", http.StatusFound)
+}
+
+func chatHandler(w http.ResponseWriter, r *http.Request) {
+
+	tmpl := template.Must(template.ParseFiles("templates/chat.html"))
+	tmpl.Execute(w, nil)
+}
+
+// RoomManager manages private chat rooms
+type RoomManager struct {
+	rooms map[string][]int64
+	mu    sync.Mutex
+}
+
+// NewRoomManager creates a new RoomManager instance
+func NewRoomManager() *RoomManager {
+	return &RoomManager{
+		rooms: make(map[string][]int64),
+	}
+}
+
+// CreateRoom creates a new private chat room
+func (rm *RoomManager) CreateRoom(userID1, userID2 int64) string {
+	roomID := generateUniqueRoomID(userID1, userID2)
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+	rm.rooms[roomID] = []int64{userID1, userID2}
+	return roomID
+}
+
+// CheckAccess checks if a user is authorized to access the room
+func (rm *RoomManager) CheckAccess(roomID string, userID int64) bool {
+	rm.mu.Lock()
+	defer rm.mu.Unlock()
+	users, ok := rm.rooms[roomID]
+	if !ok {
+		return false // Room doesn't exist
+	}
+	for _, id := range users {
+		if id == userID {
+			return true // User is authorized
+		}
+	}
+	return false // User is not authorized
+}
+
+// initiatePrivateChatHandler handles private chat initiation
+func initiatePrivateChatHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the target user's ID from the request query parameters
+	targetUserID := r.URL.Query().Get("userId")
+	targetID, err := strconv.ParseInt(targetUserID, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid target user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Get the current user's ID from the context
+	// Retrieve user information from the request context
+	// Use the same key instances for retrieving values from the context
+	var userIDKey ID = 0
+	currentUserID, ok := r.Context().Value(userIDKey).(int64)
+	if !ok {
+		log.Println("Error retrieving user ID from context")
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	println(currentUserID, targetID)
+
+	// Create RoomManager instance
+	roomManager := NewRoomManager()
+
+	// Create a unique room ID for the private chat
+	roomID := roomManager.CreateRoom(currentUserID, targetID)
+
+	// Redirect the user to the private chat room
+	http.Redirect(w, r, "/chat-room/"+"?roomId="+roomID+"&userId="+targetUserID, http.StatusFound)
+}
+
+// generateUniqueRoomID generates a unique room ID based on user IDs
+func generateUniqueRoomID(userID1, userID2 int64) string {
+	// Sort the user IDs to ensure consistency
+	sortedUserIDs := []int64{userID1, userID2}
+	sort.Slice(sortedUserIDs, func(i, j int) bool {
+		return sortedUserIDs[i] < sortedUserIDs[j]
+	})
+
+	// Concatenate sorted user IDs
+	combinedData := fmt.Sprintf("%d%d", sortedUserIDs[0], sortedUserIDs[1])
+
+	// Hash the concatenated string using sha256
+	hash := sha256.New()
+	hash.Write([]byte(combinedData))
+	hashedResult := hex.EncodeToString(hash.Sum(nil))
+
+	return hashedResult
 }
