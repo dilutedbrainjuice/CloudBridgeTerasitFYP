@@ -96,6 +96,7 @@
 const talkingTo = document.getElementById("talkingTo");
 talkingTo.innerText = "Talking to: " + fetchTarget()
 
+
 let user = null;
 
 // Fetch user information
@@ -172,6 +173,20 @@ function fetchUserInfo() {
             sendEvent("change_room", changeEvent);
             textarea = document.getElementById("chatmessages");
             textarea.innerHTML = `You changed room into: ${selectedchat}`;
+
+            fetch(`/fetch-chat-history?chatroom=${selectedchat}`)
+            .then(response => response.json())
+            .then(history => {
+                if (history && history.length > 0){
+                    history.forEach(messageEvent => appendChatMessage(messageEvent));
+                } else {
+                    console.log('No chat history available.');
+
+                }
+                // Loop through the history and append each message
+                
+            })
+        .catch(error => console.error('Error fetching chat history:', error));
         } else {
             // If the WebSocket connection is not open, wait and retry after a short delay
             

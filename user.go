@@ -28,9 +28,10 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-type MessageDto struct {
-	ID        string
-	Message   string
-	From      string
-	Timestamp time.Time
+type Message struct {
+	ID        int       `json:"id"`
+	Sender    string    `json:"sender"`
+	Content   string    `json:"content"`
+	Timestamp time.Time `json:"timestamp"`
+	Chatroom  string    `json:"chatroom"`
 }

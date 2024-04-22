@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -26,8 +27,13 @@ const (
 	// EventNewMessage is a response to send_message
 	EventNewMessage = "new_message"
 	// EventChangeRoom is event when switching rooms
-	EventChangeRoom = "change_room"
+	EventChangeRoom     = "change_room"
+	EventMessageHistory = "message_history"
 )
+
+type MessageHistoryEvent struct {
+	History []NewMessageEvent `json:"history"`
+}
 
 // SendMessageEvent is the payload sent in the
 // send_message event
@@ -43,7 +49,7 @@ type NewMessageEvent struct {
 }
 
 // SendMessageHandler will send out a message to all other participants in the chat
-func SendMessageHandler(event Event, c *Client) error {
+func SendMessageHandler(db *sql.DB, event Event, c *Client) error {
 	// Marshal Payload into wanted format
 	var chatevent SendMessageEvent
 	if err := json.Unmarshal(event.Payload, &chatevent); err != nil {
@@ -56,6 +62,11 @@ func SendMessageHandler(event Event, c *Client) error {
 	broadMessage.Sent = time.Now()
 	broadMessage.Message = chatevent.Message
 	broadMessage.From = chatevent.From
+
+	err := saveMessageToDB(broadMessage, c.chatroom, db)
+	if err != nil {
+		log.Println(err)
+	}
 
 	data, err := json.Marshal(broadMessage)
 	if err != nil {

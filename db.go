@@ -117,3 +117,44 @@ func getuserlocation(db *sql.DB) ([]User, error) {
 	return users, nil
 
 }
+
+func saveMessageToDB(message NewMessageEvent, chatroom string, db *sql.DB) error {
+
+	// Prepare SQL statement
+	stmt, err := db.Prepare("INSERT INTO message (sender, content, timestamp, chatroom) VALUES ($1, $2, $3, $4)")
+	if err != nil {
+		log.Println(err)
+	}
+	defer stmt.Close()
+
+	// Execute SQL statement to insert message
+	_, err = stmt.Exec(message.From, message.Message, message.Sent, chatroom)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return nil
+}
+
+func GetMessageHistory(chatroom string, db *sql.DB) ([]NewMessageEvent, error) {
+	// Query the database for message history for the given chatroom
+	rows, err := db.Query("SELECT content, sender, timestamp FROM Message WHERE chatroom = $1 ORDER BY timestamp", chatroom)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Iterate over the rows and scan them into NewMessageEvent objects
+	var messageHistory []NewMessageEvent
+	for rows.Next() {
+		var message NewMessageEvent
+		if err := rows.Scan(&message.Message, &message.From, &message.Sent); err != nil {
+			return nil, err
+		}
+		messageHistory = append(messageHistory, message)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return messageHistory, nil
+}

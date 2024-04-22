@@ -39,13 +39,14 @@ func main() {
 	http.HandleFunc("/initiateprivatechat", validateToken(chatHandler))
 	//http.HandleFunc("/initiateprivatechat", validateToken(initiatePrivateChatHandler))
 	http.HandleFunc("/api/currentuserIDName", validateToken(currentUserIDNameHandler))
+	http.HandleFunc("/fetch-chat-history", FetchChatHistoryHandler(db))
 
 	rootCtx := context.Background()
 	ctx, cancel := context.WithCancel(rootCtx)
 
 	defer cancel()
-	manager := NewManager(ctx)
-	http.HandleFunc("/ws", manager.serveWS)
+	manager := NewManager(ctx, db)
+	http.HandleFunc("/ws", manager.serveWS())
 
 	log.Println("Listening on port 9000")
 	log.Fatal(http.ListenAndServe(":9000", nil))

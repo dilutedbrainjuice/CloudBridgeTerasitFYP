@@ -402,3 +402,21 @@ func extractUserInfoFromToken(r *http.Request) (string, int64, error) {
 
 	return username, userID, nil
 }
+
+func FetchChatHistoryHandler(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Extract chatroom from request
+		chatroom := r.URL.Query().Get("chatroom")
+
+		// Fetch chat history from the database
+		history, err := GetMessageHistory(chatroom, db)
+		if err != nil {
+			// Handle error
+			http.Error(w, "Failed to fetch chat history", http.StatusInternalServerError)
+			return
+		}
+
+		// Encode history as JSON and send it in the response
+		json.NewEncoder(w).Encode(history)
+	}
+}
