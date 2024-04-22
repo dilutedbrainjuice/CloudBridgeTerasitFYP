@@ -181,7 +181,6 @@ function fetchUserInfo() {
                     history.forEach(messageEvent => appendChatMessage(messageEvent));
                 } else {
                     console.log('No chat history available.');
-
                 }
                 // Loop through the history and append each message
                 
@@ -275,7 +274,7 @@ function fetchUserInfo() {
             fetchUserInfo();
             // Apply our listener functions to the submit event on both forms
             // we do it this way to avoid redirects
-            setTimeout(changeChatRoom, 1000);
+            setTimeout(changeChatRoom, 500);
             document.getElementById("chatroom-message").onsubmit = sendMessage;
             // loadChatMessages();
 

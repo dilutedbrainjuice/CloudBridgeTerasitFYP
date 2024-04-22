@@ -25,23 +25,30 @@
     function getUserCity(lat, lng, marker) {
   // Replace YOUR_API_KEY with your actual Google Maps API key
   var url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + lat + ',' + lng + '&key=AIzaSyAc9ZBIbs3Fw6bjDf7X9hboPF-m2_2f-BM';
-
   fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      var city = '';
-      // Loop through address components to find locality (city)
-      for (var i = 0; i < data.results[0].address_components.length; i++) {
-        if (data.results[0].address_components[i].types[0] === 'locality') {
-          city = data.results[0].address_components[i].long_name;
-          break;
-        }
-      }
-      city = city || 'Unknown'; // Set default to 'Unknown' if city not found
+        .then(response => response.json())
+        .then(data => {
+            var city = '';
+            // Loop through address components to find locality (city)
+            for (var i = 0; i < data.results[0].address_components.length; i++) {
+                if (data.results[0].address_components[i].types[0] === 'locality') {
+                    city = data.results[0].address_components[i].long_name;
+                    break;
+                }
+            }
+            city = city || 'Unknown'; // Set default to 'Unknown' if city not found
 
-      marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +' , \''+ marker.user.username +'\')">Chat</button>') ; // Update popup content with city name
-    })
-    .catch(error => console.error('Error fetching city data:', error));
+            if (marker.user.username === marker.user.tokenUsername){
+                marker.bindPopup('You are here!!!<br>'+'<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> You are here!<br><b>CloudService:</b> ' + marker.user.cloudService);
+            } else {
+
+                marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +' , \''+ marker.user.username +'\')">Chat</button>'); // Update popup content with city name
+
+            }
+
+            
+        })
+        .catch(error => console.error('Error fetching city data:', error));
 }
 
 function openChat(targetUserID, targetUsername){
@@ -84,53 +91,46 @@ function createUserIcon(profilePicUrl) {
 
     // Fetch user locations from backend
     fetch('/api/users')
-    .then(response => response.json())
-    .then(users => {
-        var userMarkers = [];
-        var latSum = 0;
-        var lonSum = 0;
+        .then(response => response.json())
+        .then(users => {
+            var userMarkers = [];
+            var latSum = 0;
+            var lonSum = 0;
 
-        users.forEach(user => {
-            latSum += user.latitude;
-            lonSum += user.longitude;
+            users.forEach(user => {
+                console.log(user.latitude)
 
-            var markerIcon = createUserIcon(user.profilePicURL);
+                
+                latSum += user.latitude;
+                lonSum += user.longitude;
 
-            var popupContent = '<b>Username:</b> ' + user.username + '<br><b>Near:</b> Unknown<br><b>CloudService:</b> ' + user.cloudService + '<br><button onclick="openChat('+ user.id +', \''+ user.username +'\')">Chat</button>';
+                var marker = L.marker([user.latitude, user.longitude], {
+                    icon: createUserIcon(user.profilePicURL)
+                });
 
-            // Check if the username matches the tokenusername
-            if (user.username === user.tokenUsername) {
-                // Display "you are here!" bubble
-                popupContent = 'You are here!!!<br>'+'<b>Username:</b> ' + user.username + '<br><b>Near:</b> You are here!<br><b>CloudService:</b> ' + user.cloudService;
-            }
+                
+                marker.user = user; // Attach user data to marker object
 
-            var marker = L.marker([user.latitude, user.longitude], {
-                icon: markerIcon
+                // Call getUserCity to get city for each marker
+                getUserCity(user.latitude, user.longitude, marker);
+                
+
+                userMarkers.push(marker);
             });
 
-            // Set popup content for the marker
-            marker.bindPopup(popupContent);
+            // Calculate average latitude and longitude
+            var avgLat = latSum / users.length;
+            var avgLon = lonSum / users.length;
 
-            marker.on('click', function() {
-                map.setView([this.getLatLng().lat, this.getLatLng().lng], 14); // Zoom to marker location with zoom level 14 (more zoomed in)
+            // Set the view to the average latitude and longitude
+            map.setView([avgLat, avgLon],12);
+
+            // Add markers to the map
+            userMarkers.forEach(marker => {
+                marker.addTo(map);
             });
-
-            userMarkers.push(marker);
-        });
-
-        // Calculate average latitude and longitude
-        var avgLat = latSum / users.length;
-        var avgLon = lonSum / users.length;
-
-        // Set the view to the average latitude and longitude
-        map.setView([avgLat, avgLon], 12);
-
-        // Add markers to the map
-        userMarkers.forEach(marker => {
-            marker.addTo(map);
-        });
-    })
-    .catch(error => console.error('Error fetching user locations:', error));
+        })
+        .catch(error => console.error('Error fetching user locations:', error));
 </script>
 
     
