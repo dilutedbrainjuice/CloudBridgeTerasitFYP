@@ -1,14 +1,112 @@
+/* Add this CSS to your existing stylesheet or in a <style> tag in the <head> of your HTML document */
+body{
+  margin: 0;
+}
+
+.headercolor{
+  background-color: #1F2937;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+
+}
+
+.headercontainer{
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 80vw;
+  margin: 0 auto;
+  overflow: hidden;
+  
+  
+}
+.headeritem{
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+.headeritem h2{
+  color: #f9faf8;
+  font-size: 24px;
+  font-weight: bolder;
+  list-style: none;
+}
+
+.headeritem ul{
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.headeritem li{
+  margin-left: 20px;
+}
+
+.headeritem a{
+  color: #f9faf8;
+  font-size: 18px;
+  text-decoration: none;
+  white-space: nowrap;
+  
+}
+
+#map {
+  height: 92vh;
+  flex: 1; /* Adjust map height to cover most of the screen */
+}
+
+/* Style for Leaflet popups */
+.leaflet-popup-content-wrapper {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-popup-content {
+  padding: 10px;
+}
+
+.leaflet-popup-tip-container {
+  display: none; /* Hide the default leaflet popup arrow */
+}
+
+/* Style for the custom chat button */
+.leaflet-popup-content button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.leaflet-popup-content button:hover {
+  background-color: #0056b3;
+}
+
+/* Style for the user icon */
 .custom-icon {
-    border: 2px solid green;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-  }
-  
-  .rounded-icon {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-size: cover;
-  }
-  
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid green; /* Add a border around the user icon */
+}
+
+.rounded-icon {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}

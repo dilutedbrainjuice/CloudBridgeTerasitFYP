@@ -5,13 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="../static/css/style.css">
-    <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
 </head>
 <body>
-    <h1>Get User Location and display on map</h1>
-    <div style="height: 300px;" id="map"></div>
+    <div class="headercolor">
+        <div class="headercontainer">
+          <div class="headeritem"><h2>Cloud Bridge</h2></div>
+          <div class="headeritem">
+            <ul>
+              <li><a href="/home/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+              <li><a href="/logout/">Logout</a></li>
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    <div id="map"></div>
     
 </body>
 <script>
@@ -20,7 +33,7 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-  
+    
 
     function getUserCity(lat, lng, marker) {
   // Replace YOUR_API_KEY with your actual Google Maps API key
@@ -31,18 +44,23 @@
             var city = '';
             // Loop through address components to find locality (city)
             for (var i = 0; i < data.results[0].address_components.length; i++) {
-                if (data.results[0].address_components[i].types[0] === 'locality') {
-                    city = data.results[0].address_components[i].long_name;
+                if (data.results[0].address_components[i].types.includes('locality')) {
+                    area = data.results[0].address_components[i].long_name;
                     break;
+                } else if (data.results[0].address_components[i].types.includes('sublocality')) {
+                    area = data.results[0].address_components[i].long_name;
                 }
             }
-            city = city || 'Unknown'; // Set default to 'Unknown' if city not found
+            // If neither locality nor sublocality is found, use 'Unknown'
+            if (!area) {
+                area = 'Unknown';
+            }
 
             if (marker.user.username === marker.user.tokenUsername){
                 marker.bindPopup('You are here!!!<br>'+'<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> You are here!<br><b>CloudService:</b> ' + marker.user.cloudService);
             } else {
 
-                marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + city + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +' , \''+ marker.user.username +'\')">Chat</button>'); // Update popup content with city name
+                marker.bindPopup('<b>Username:</b> ' + marker.user.username + '<br><b>Near:</b> ' + area + '<br><b>CloudService:</b> ' + marker.user.cloudService + '<br><button onclick="openChat('+ marker.user.id +' , \''+ marker.user.username +'\')">Chat</button>'); // Update popup content with city name
 
             }
 
@@ -88,6 +106,8 @@ function createUserIcon(profilePicUrl) {
     
   });
 }
+
+
 
     // Fetch user locations from backend
     fetch('/api/users')

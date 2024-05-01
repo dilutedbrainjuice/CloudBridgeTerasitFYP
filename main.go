@@ -11,7 +11,7 @@ import (
 func main() {
 
 	db := ConnectPostgresDB()
-
+	http.HandleFunc("/", homehandler)
 	http.HandleFunc("/home/", homehandler)
 	http.HandleFunc("/registersite/", registersitehandler)
 	http.HandleFunc("/registerform/", RegisterHandler(db))

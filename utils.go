@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -18,7 +19,13 @@ func validateToken(next http.HandlerFunc) http.HandlerFunc {
 			if err == http.ErrNoCookie {
 				log.Println("no cookie found")
 				// Unauthorized if no token found
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				tmpl := template.Must(template.ParseGlob("templates/login.html"))
+				data := struct {
+					Error string
+				}{
+					Error: "Please log in first",
+				}
+				tmpl.Execute(w, data)
 				return
 			}
 			log.Println(err)
@@ -37,7 +44,13 @@ func validateToken(next http.HandlerFunc) http.HandlerFunc {
 		})
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				tmpl := template.Must(template.ParseGlob("templates/login.html"))
+				data := struct {
+					Error string
+				}{
+					Error: "Please log in first",
+				}
+				tmpl.Execute(w, data)
 				return
 			}
 			http.Error(w, "Bad request", http.StatusBadRequest)
@@ -45,7 +58,13 @@ func validateToken(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		if !token.Valid {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			tmpl := template.Must(template.ParseGlob("templates/login.html"))
+			data := struct {
+				Error string
+			}{
+				Error: "Please log in first",
+			}
+			tmpl.Execute(w, data)
 			return
 		}
 

@@ -5,16 +5,183 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>PP - Websockets</title>
+    <title>Chat</title>
+    <style>
+
+        
+        body{
+            margin: 0;
+        }
+
+        .headercolor{
+            background-color: #1F2937;
+            display: flex;
+            justify-content: center;
+            margin: 0 auto;
+
+        }
+
+        .headercontainer{
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80vw;
+            margin: 0 auto;
+            overflow: hidden;
+            
+            
+        }
+        .headeritem{
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+
+        .headeritem h2{
+            color: #f9faf8;
+            font-size: 24px;
+            font-weight: bolder;
+            list-style: none;
+        }
+
+        .headeritem ul{
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .headeritem li{
+            margin-left: 20px;
+        }
+
+        .headeritem a{
+            color: #f9faf8;
+            font-size: 18px;
+            text-decoration: none;
+            white-space: nowrap;
+            
+        }
+
+                .headeritem #discoverbutton{
+            padding: 20px;
+            border-radius: 40px; /* Adjust border-radius for rounded corners */
+            background-color: #3498db; /* Blue background color */
+            color: #ffffff; /* White font color */
+            text-decoration: none; /* Remove underline */
+            font-size: 18px; /* Adjust font size as needed */
+            font-weight: bold; /* Optionally, set font weight to bold */
+            text-align: center; /* Center text within the button */
+        }
+
+        .headeritem #discoverbutton:hover{
+            background-color: #2980b9;
+        }
+
+        
+
+        .center {
+            margin: auto;
+            width: 50%;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h3 {
+            color: #007bff;
+            text-align: center;
+        }
+
+
+                /* Add styles for the chatbox */
+        .messagearea {
+            width: 98%;
+            height: 400px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical; /* Allow vertical resizing of textarea */
+            overflow-y: auto; /* Add scrollbar when content exceeds height */
+        }
+
+        /* Style the input and submit button in the chatroom-message form */
+        #chatroom-message input[type="text"] {
+            width: calc(100% - 120px); /* Adjust width to leave space for the submit button */
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #chatroom-message input[type="submit"] {
+            padding: 1vw 3vw;
+            border-radius: 5px; /* Adjust border-radius for rounded corners */
+            background-color: #3498db; /* Blue background color */
+            color: #ffffff; /* White font color */
+            text-decoration: none; /* Remove underline */
+            font-size: 16px; /* Adjust font size as needed */
+            font-weight: bold; /* Optionally, set font weight to bold */
+            text-align: center; /* Center text within the button */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #chatroom-message input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Adjust spacing for the forms */
+        form {
+            margin-bottom: 20px;
+        }
+
+        /* Center the forms */
+        .center form {
+            text-align: center;
+        }
+
+        /* Style the header and connection status */
+        #chat-header, #connection-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        
+
+        
+    </style>
 </head>
 
 <body>
+    <div class="headercolor">
+        <div class="headercontainer">
+          <div class="headeritem"><h2>Cloud Bridge</h2></div>
+          <div class="headeritem">
+            <ul>
+            <li><a id="discoverbutton" href="/userdashboard/" role="button">Discover</a></li>
+              <li><a href="/home/">Home</a></li>
+              <li><a href="/about/">About</a></li>
+              <li><a href="/logout/">Logout</a></li>
+
+            </ul>
+          </div>
+        </div>
+      </div>
+    
     <div class="center">
-        <h1>Amazing Chat Application</h1>
-        <h3 id="chat-header">Currently in chat: general</h3>
-        <h3 id="connection-header">Connected to Websocket: false</h3>
-        <div id="loggedInAs"></div>
-        <div id="talkingTo"></div>
+        <h1 id="chattingTo"></h1>
+        <h3 id="chat-header" style="display: none;">Currently in chat: general</h3>
+        <h3 id="connection-header" style="display: none;">Connected to Websocket: false</h3>
+        <div id="loggedInAs" style="display: none;"></div>
+        <div id="talkingTo" style="display: none;"></div>
 
 
         <!--
@@ -30,7 +197,7 @@
         <!--
         Textarea to show messages from users
         -->
-        <textarea class="messagearea" id="chatmessages" readonly name="chatmessages" rows="4" cols="50"
+        <textarea class="messagearea" id="chatmessages" readonly name="chatmessages" 
             placeholder="Welcome to the general chatroom, here messages from others will appear"></textarea>
 
         <br>
@@ -94,7 +261,10 @@
          * */
          // Declare user globally accessible
 const talkingTo = document.getElementById("talkingTo");
-talkingTo.innerText = "Talking to: " + fetchTarget()
+talkingTo.innerText = "Talking to: " + fetchTarget();
+
+const chattingTo = document.getElementById("chattingTo")
+chattingTo.innerText = fetchTarget();
 
 
 let user = null;
@@ -152,6 +322,8 @@ function fetchUserInfo() {
                 this.name = name;
             }
         }
+        
+
         /**
          * changeChatRoom will update the value of selectedchat
          * and also notify the server that it changes chatroom
@@ -172,7 +344,7 @@ function fetchUserInfo() {
             let changeEvent = new ChangeChatRoomEvent(selectedchat);
             sendEvent("change_room", changeEvent);
             textarea = document.getElementById("chatmessages");
-            textarea.innerHTML = `You changed room into: ${selectedchat}`;
+            textarea.innerHTML = `Connection Established`;
 
             fetch(`/fetch-chat-history?chatroom=${selectedchat}`)
             .then(response => response.json())
@@ -281,23 +453,8 @@ function fetchUserInfo() {
         };
     </script>
 
-    <style type="text/css">
-        body {
-            overflow: hidden;
-            padding: 0;
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            background: rgb(66, 56, 56);
-        }
+    
 
-        .center {
-            margin: auto;
-            width: 50%;
-            border: 3px solid green;
-            padding: 10px;
-        }
-    </style>
 
 </body>
 

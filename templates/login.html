@@ -3,24 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Login</title>
+    <style>
+     
+        body{
+            margin: 0;
+        }
+
+        .headercolor{
+            background-color: #1F2937;
+            display: flex;
+            justify-content: center;
+            margin: 0 auto;
+
+        }
+
+        .headercontainer{
+            
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 80vw;
+            margin: 0 auto;
+            overflow: hidden;
+            
+            
+        }
+        .headeritem{
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+
+        .headeritem h2{
+            color: #f9faf8;
+            font-size: 24px;
+            font-weight: bolder;
+            list-style: none;
+        }
+
+        .headeritem ul{
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .headeritem li{
+            margin-left: 20px;
+        }
+
+        .headeritem a{
+            color: #f9faf8;
+            font-size: 18px;
+            text-decoration: none;
+            white-space: nowrap;
+            
+        }
+    
+        
+        /* Form styles */
+        form {
+            max-width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button[type="submit"],
+        button[type="button"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #1F2937;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover,
+        button[type="button"]:hover {
+            background-color: #0E1621;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            text-align: center;
+            color: red;
+            margin-top: 10px;
+        }
+
+    </style>
 </head>
 <body>
-    <!--  -->
-    <h1>Login Page</h1>
-    <a href="/home/">Home</a>
-    <a href="/login/">Login</a>
-    <a href="/registersite/">Register</a>
-    <a href="/about/">About</a>
+    <div class="headercolor">
+        <div class="headercontainer">
+          <div class="headeritem"><h2>Cloud Bridge</h2></div>
+          <div class="headeritem">
+            <ul>
+              <li><a href="/home/">Home</a></li>
+              <li><a href="/login/">Login</a></li>
+              <li><a href="/registersite/">Register</a></li>
+              <li><a href="/about/">About</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     
-    <h2>Login Logic</h2>
+    
+   
     <div id="content">
         <form action="/loginform/" method="post">
+            <p>Username:</p>
             <input type="text" name="username" required>
+            <p>Password:</p>
             <input type="password" name="password" required>
             <button type="submit">Login</button>
         </form>
-        
+        {{if .Error}}
+            <p class="error-message" style="color: red;">{{.Error}}</p>
+        {{end}}
     </div>
 </body>
 </html>

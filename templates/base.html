@@ -3,18 +3,454 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base</title>
+    <title>Home</title>
+    <style>
+        body{
+    margin: 0;
+}
+
+.headercolor{
+    background-color: #1F2937;
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+
+}
+
+.headercontainer{
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80vw;
+    margin: 0 auto;
+    overflow: hidden;
+    
+       
+}
+.headeritem{
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+.headeritem h2{
+    color: #f9faf8;
+    font-size: 24px;
+    font-weight: bolder;
+    list-style: none;
+}
+
+.headeritem ul{
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.headeritem li{
+    margin-left: 20px;
+}
+
+.headeritem a{
+    color: #f9faf8;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap;
+    
+}
+
+.headeritem #discoverbutton{
+    padding: 20px;
+    border-radius: 40px; /* Adjust border-radius for rounded corners */
+    background-color: #3498db; /* Blue background color */
+    color: #ffffff; /* White font color */
+    text-decoration: none; /* Remove underline */
+    font-size: 18px; /* Adjust font size as needed */
+    font-weight: bold; /* Optionally, set font weight to bold */
+    text-align: center; /* Center text within the button */
+}
+
+.headeritem #discoverbutton:hover{
+    background-color: #2980b9;
+}
+
+
+
+.firstcontainer{
+    padding: 2vw 4vw;
+    background-color: #1F2937;
+    display: flex;
+    justify-content: center;
+}
+
+.first{
+    
+    display: flex;
+    max-width: 80vw;
+    overflow: hidden;
+    align-items: center;
+    
+   
+}
+
+.first .description{
+    
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin: 2vw 1vw;
+    
+
+}
+
+.first .description h1{
+   
+    font-size: 48px;
+    color: #f9faf8;
+    font-weight: bolder;
+    
+    
+}
+
+.first .description h2{
+    font-weight: bolder;
+    font-size: 18px;
+    color: #f9faf8;
+    
+
+}
+.first img{
+    
+    height: auto;
+    width: 100%;
+   
+    
+}
+
+.first .description a{
+    padding: 1vw 3vw;
+    
+    border-radius: 5px; /* Adjust border-radius for rounded corners */
+    background-color: #3498db; /* Blue background color */
+    color: #ffffff; /* White font color */
+    text-decoration: none; /* Remove underline */
+    font-size: 16px; /* Adjust font size as needed */
+    font-weight: bold; /* Optionally, set font weight to bold */
+    text-align: center; /* Center text within the button */
+}
+
+.first .description a:hover{
+    background-color: #2980b9; 
+
+}
+
+.secondcontainer{
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-self: center;
+
+}
+
+.secondcontainer .second h2{
+    
+    font-size: 36px;
+    justify-self: center;
+    text-align: center;
+}
+
+.boxcontainer{
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    
+    
+}
+
+.boxc{
+    width: 15vw;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    
+    
+}
+
+.box{
+    width: 150px;
+    height: 150px;
+    /* border: 4px solid blue; */
+    border-radius: 15px;
+    align-self: center;
+    gap: 1vw;
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: center; /* Vertical centering */
+
+}
+
+.boxc h5{
+    text-align: center;
+    text-wrap: wrap;
+    font-size: 18px;
+    color: #1f2937;
+}
+
+.thirdcontainer {
+    background-color: #e5e7eb;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align content to the top of the container */
+}
+
+.quote {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 80vw;
+    padding-top: 20px;
+}
+
+.quote .img {
+    max-width: 100%; /* Ensure the image doesn't stretch beyond its original width */
+    height: auto;
+    display: flex;
+    justify-content: center; /* Horizontal centering */
+    align-items: flex-start; /* Top-centered vertically */
+    margin-bottom: 20px; /* Add margin to the bottom of the image */
+}
+
+
+.quote #text {
+    
+    font-weight: 100;
+    font-size: 36px;
+    font-style: bold;
+    color: #1f2937;
+    text-align: center;
+    margin: 40px;
+    margin-top: -60px;
+    
+}
+
+
+.fourthcontainer {
+    display: flex;
+    justify-content: center;
+    padding: 5vw 7vw;
+}
+
+.fourthbody{
+    background-color: #3882f6;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 60vw;
+    
+
+}
+
+.fourthbody .signuptext {
+    margin: 1vw 3vw;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+
+}
+
+.signuptext h2{
+    font-size: 24px;
+    font-weight: bolder;
+}
+
+.signuptext h5{
+    font-size: 14px;
+    font-weight: lighter;
+}
+
+.signupbutton a{
+    border: 5px solid white;
+    border-radius: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 1vw 3vw;
+    color: #ffffff; /* White font color */
+    text-decoration: none; /* Remove underline */
+    font-size: 16px; /* Adjust font size as needed */
+    font-weight: bold; 
+    text-align: center; 
+
+}
+
+.signupbutton a:hover{
+    background-color: white;
+    color: #3882f6;
+}
+
+.foot{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1F2937;
+}
+
+.foot footer{
+    font-size: 13px;
+    font-family: sans-serif;
+    color: white;
+}
+
+
+
+
+
+    </style>
     
 </head>
 <body>
-    <!--This is temporary. Will change to htmx once core logic is done-->
-    <h1>Welcome to CloudBridge.</h1>
-    <div id="content">
+    <!-- This is temporary. Will change to htmx once core logic is done
+    <header><h1>Welcome to CloudBridge.</h1></header>
+    
+    <nav id="content">
         <a href="/home/">Home</a>
         <a href="/login/">Login</a>
         <a href="/registersite/">Register</a>
         <a href="/about/">About</a>
+    </nav>
+
+    <div class = "container"></div> -->
+
+    <div class="headercolor">
+        <div class = "headercontainer">
+            <div class="headeritem"><h2>Cloud Bridge</h2></div>
+            <div class="headeritem">
+                <ul>
+                    <li><a id="discoverbutton" href="/userdashboard/" role="button">Discover</a></li>
+                    <li><a href="/home/">Home</a></li>
+                    <li><a href="/login/">Login</a></li>
+                    <li><a href="/registersite/">Register</a></li>
+                    <li><a href="/about/">About</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
+    {{if .Error}}
+            <p class="error-message" style="color: red;">{{.Error}}</p>
+    {{end}}
+    
+    <div class="firstcontainer">
+        
+        <div class="first">
+            <div class="description">
+                <h1>Welcome to CloudBridge</h1>
+                
+            <h2>
+                Take your cloud gaming to the next level! CloudBridge is your ultimate hub for connecting with both cloud gaming providers offering processing power and clients seeking that extra boost. Explore our interactive map to find the perfect match for your needs. Chat directly with potential partners and seamlessly connect through your preferred cloud gaming platform.
+
+            </h2>
+            <a href="/login/" role="button">Login</a>
+            </div>
+
+            
+            <!-- <div class="img"><img src="assets/sentinels1.jpg" alt="13 Sentinels Protagonists"></div> -->
+            
+        </div>
+
+    </div>
+
+        
+    <div class="secondcontainer">
+        <div class="second">
+            <h2>Your first time? Check out these P2P cloud gaming solutions!</h2>
+            <div class="boxcontainer">
+                <div class="boxc">
+                    <div class="box" id="box-1">
+                        <a href="https://moonlight-stream.org/">
+                            <img src="../static/img/moonlightlogo.png" alt="Moonlight Logo" style="width: 150px; height: auto;">
+                        </a>
+                    </div>
+                    <h5>Moonlight</h5>
+        
+                </div>
+                <div class="boxc">
+                    <div class="box" id="box-1">
+                        <a href="https://parsec.app/">
+                            <img src="../static/img/parseclogo.png" alt="Parsec Logo" style="width: 250px; height: auto;">
+                        </a>
+                    </div>
+                    <h5>Parsec</h5>
+                </div>
+                <div class="boxc">
+                    <div class="box" id="box-1">
+                        <a href="https://store.steampowered.com/app/353380/Steam_Link/">
+                            <img src="../static/img/steamlinklogo.png" alt="Steam Link Logo" style="width: 150px; height: auto; border-radius: 20px;">
+                        </a>
+                    </div>
+                    <h5>Steam Link</h5>
+        
+                </div>
+                <div class="boxc">
+                    <div class="box" id="box-1">
+                        <a href="https://github.com/giongto35/cloud-morph">
+                            <img src="../static/img/githublogo.png" alt="CloudMorph Logo" style="width: 150px; height: auto; border-radius: 20px;">
+                        </a>
+                    </div>
+                    <h5>Cloud Morph</h5>
+        
+                </div>
+
+            </div>
+            
+        </div>
+
+    </div>
+    
+    <div class="thirdcontainer">
+        <div class="Third Body Content">
+            <div class="quote">
+                <div class="img"><img src="../static/img/dashboardscreenshot.png" alt="Dashboard Screenshot" style="width: 1250px; height: auto; margin: 40px;"></div>
+                <div id="text">
+                    <h4>
+                       Login to discover providers and clients alike around you!
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <div class="fourthcontainer">
+        <div class="fourthbody">
+            <div class="signuptext">
+                <h2>Start Connecting!</h2>
+                <h5 style="font-weight: bolder;">Sign up to discover by clicking the button here</h5>
+            </div>
+            <div class="signupbutton">
+                <a href="/registersite/" role="button">Sign Up</a>
+            </div>
+        </div>
+
+    </div>
+    
+    
+    
+</body>
+
+<div class="foot">
+    <footer>
+        <h3>
+            Copyright CloudBridge 2024
+        </h3>
+    </footer>
+</div>
     
 </body>
 </html>

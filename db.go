@@ -69,7 +69,7 @@ func getUserByUsername(db *sql.DB, username string) *User {
 		if err == sql.ErrNoRows {
 			// If no user with the given username is found, return nil
 			log.Println("here username not found")
-			log.Fatal(err)
+			log.Println(err)
 
 		} else {
 			log.Println("here username found")

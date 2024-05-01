@@ -27,13 +27,8 @@ const (
 	// EventNewMessage is a response to send_message
 	EventNewMessage = "new_message"
 	// EventChangeRoom is event when switching rooms
-	EventChangeRoom     = "change_room"
-	EventMessageHistory = "message_history"
+	EventChangeRoom = "change_room"
 )
-
-type MessageHistoryEvent struct {
-	History []NewMessageEvent `json:"history"`
-}
 
 // SendMessageEvent is the payload sent in the
 // send_message event

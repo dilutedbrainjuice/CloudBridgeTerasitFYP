@@ -236,12 +236,18 @@ func loginformhandler(db *sql.DB) http.HandlerFunc {
 
 				// Redirect to protected page
 				log.Println("Logged in handler version")
-				http.Redirect(w, r, "/about/", http.StatusFound)
+				http.Redirect(w, r, "/userdashboard/", http.StatusFound)
 				return
 			} else {
 				// Handle invalid credentials
 				//FLAG :: Handle "Invalid credentials"
-				http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+				tmpl := template.Must(template.ParseGlob("templates/login.html"))
+				data := struct {
+					Error string
+				}{
+					Error: "Invalid username or password",
+				}
+				tmpl.Execute(w, data)
 				return
 			}
 

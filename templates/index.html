@@ -3,65 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page</title>
+    <title>Register</title>
+
+    <link rel="stylesheet" href="../static/css/registerstyles.css">
     
     <script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
 
+    <style>
+              body{
+    margin: 0;
+}
+
+.headercolor{
+    background-color: #1F2937;
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+
+}
+
+.headercontainer{
+    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80vw;
+    margin: 0 auto;
+    overflow: hidden;
+    
+       
+}
+.headeritem{
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+.headeritem h2{
+    color: #f9faf8;
+    font-size: 24px;
+    font-weight: bolder;
+    list-style: none;
+}
+
+.headeritem ul{
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.headeritem li{
+    margin-left: 20px;
+}
+
+.headeritem a{
+    color: #f9faf8;
+    font-size: 18px;
+    text-decoration: none;
+    white-space: nowrap;
+    
+}
+    </style>
+    
 </head>
 <body>
-    <a href="/home/">Home</a>
-    <a href="/login/">Login</a>
-    <a href="/registersite/">Register</a>
-    <a href="/about/">About</a>
-    <div id="content">
-        <h1>Hello Please Register Your CloudBridge Account</h1>
-
-        <form hx-post="/registerform/" enctype="multipart/form-data" hx-target="#content">
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br>
-
-            <label for="isprovider">Are you a Provider?</label><br>
-
-            <input type="radio" id="isprovider_yes" name="isprovider" value="yes" required>
-            <label for="isprovider_yes">Yes</label><br>
-
-            <input type="radio" id="isprovider_no" name="isprovider" value="no" required>
-            <label for="isprovider_no">No</label><br>
-
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email" required><br>
-    
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br>
-    
-            <label for="profilePicURL">Profile Picture:</label><br>
-            <input type="file" id="profilePic" name="profilePic" accept="image/*"><br>
-            
-    
-            <input type="number" id="latitude" name="latitude" readonly required><br>
-            <input type="number" id="longitude" name="longitude" readonly required><br>
-
-            <button id="getLocationBtn" type="button" onclick="getLocation()">Get Location</button><br><br>
-    
-            <label for="pcSpecs">PC Specs:</label><br>
-            <input type="text" id="pcSpecs" name="pcSpecs"><br>
-    
-            <label for="description">Description:</label><br>
-            <textarea id="description" name="description"></textarea><br>
-    
-            <label for="cloudService">Cloud Service:</label><br>
-            <input type="text" id="cloudService" name="cloudService"><br>
-
-            
-    
-            <button type="submit">Register</button>
-    
-        </form>
-
+  <div id="hxcontainer">
+    <div class="headercolor">
+      <div class="headercontainer">
+        <div class="headeritem"><h2>Cloud Bridge</h2></div>
+        <div class="headeritem">
+          <ul>
+            <li><a href="/home/">Home</a></li>
+            <li><a href="/login/">Login</a></li>
+            <li><a href="/registersite/">Register</a></li>
+            <li><a href="/about/">About</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
+      
+    <div id="content" class="container">
+      <h1>Please Register Your CloudBridge Account</h1>
+  
+      <form id="registerForm" action="/registerform/" method="post" enctype="multipart/form-data" hx-target="#hxcontainer">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required onchange="validateForm()"><br>
+        <span id="usernameError" class="error-message"></span>
+  
+        <label for="isprovider">Are you a Provider?</label><br>
+  
+        <input type="radio" id="isprovider_yes" name="isprovider" value="yes" required>
+        <label for="isprovider_yes">Yes</label><br>
+  
+        <input type="radio" id="isprovider_no" name="isprovider" value="no" required>
+        <label for="isprovider_no">No</label><br>
+  
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br>
+      
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br>
+      
+        <label for="profilePicURL">Profile Picture:</label><br>
+        <input type="file" id="profilePic" name="profilePic" accept="image/*"><br>
+              
+        <input type="number" id="latitude" name="latitude" readonly required><br>
+        <input type="number" id="longitude" name="longitude" readonly required><br>
+  
+        <span id="locationError" class="error-message"></span>
+        <p class="getLocation-text">Click here to save your current location:</p>
+        <button id="getLocationBtn" type="button" onclick="getLocation()">Get Location</button><br><br>
+      
+        <label for="pcSpecs">PC Specs:</label><br>
+        <input type="text" id="pcSpecs" name="pcSpecs"><br>
+      
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description"></textarea><br>
+      
+        <label for="cloudService">Cloud Service:</label>
+        <select id="cloudService" name="cloudService" style="padding: 8px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
+          <option value="Moonlight">Moonlight</option>
+          <option value="Parsec">Parsec</option>
+          <option value="SteamLink">SteamLink</option>
+          <option value="CloudMorph">CloudMorph</option>
+        </select><br><br>
+      
+        <button id="submitButton" type="submit" disabled>Register</button>
+      </form>
+    </div>
+  </div>
+  
 
-</body>
-<script>
+  <script>
     // Function to get user's location
     function getLocation() {
       if (navigator.geolocation) {
@@ -69,8 +145,11 @@
       } else {
         document.getElementById("getLocationBtn").innerHTML = "Geolocation is not supported by this browser.";
       }
+      document.getElementById("getLocationBtn").classList.toggle("clicked"); // Add or remove "clicked" class
+      validateForm(); // Call validation function on button click
+      toggleLocationError(false); // Clear any previous location error
     }
-    
+
     // Function to display user's latitude and longitude
     function showLocation(position) {
       var latitude = position.coords.latitude;
@@ -80,9 +159,48 @@
       document.getElementById("latitude").value = latitude;
       document.getElementById("longitude").value = longitude;
     }
-    
-    </script>
-    
+
+    // Function to validate form
+    function validateForm() {
+      // Get username and location button status
+      var username = document.getElementById("username").value;
+      var isLocationButtonClicked = document.getElementById("getLocationBtn").classList.contains("clicked"); // Check if button has "clicked" class
+
+      // Clear any previous error messages
+      document.getElementById("usernameError").innerText = "";
+      toggleLocationError(false);
+
+      // Check for empty spaces in username
+      if (username.trim() === "") {
+        document.getElementById("usernameError").innerText = "Username cannot be empty.";
+        return false;
+      } else if (username.indexOf(" ") !== -1) {
+        document.getElementById("usernameError").innerText = "Username cannot contain empty spaces.";
+        return false;
+      }
+
+      // Check if location button is clicked
+      if (!isLocationButtonClicked) {
+        toggleLocationError(true, "Please click 'Get Location' to save your location.");
+        return false;
+      }
+
+      // If all validations pass, enable submit button
+      document.getElementById("submitButton").disabled = false;
+      return true;
+    }
+
+    // Function to toggle location error message
+    function toggleLocationError(show, message = "") {
+      var locationError = document.getElementById("locationError");
+      if (show) {
+        locationError.innerText = message;
+      } else {
+        locationError.innerText = "";
+      }
+    }
+  </script>
+</body>
 
 </html>
 
