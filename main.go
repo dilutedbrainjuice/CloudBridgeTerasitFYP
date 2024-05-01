@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/loginform/", loginformhandler(db))
 	http.HandleFunc("/logout/", logoutHandler)
 
-	imageDir := "/home/terasit/repos/CloudBridgeTerasitFYP/uploads/"
+	imageDir := "../CloudBridgeTerasitFYP/uploads/"
 
 	// Create a file server handler to serve files from the image directory
 	fs := http.FileServer(http.Dir(imageDir))
